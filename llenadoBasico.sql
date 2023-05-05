@@ -324,3 +324,26 @@ UPDATE RecipientesLogs SET ResiduoID = 6 WHERE RecipienteLogID > 8460 AND TipoRe
 UPDATE RecipientesLogs SET ResiduoID = 5 WHERE RecipienteLogID > 8460 AND TipoRecipienteID = 15;
 
 SELECT * FROM RecipientesLogs;
+
+-- Inserts para store procedure
+insert into Actores values ('Alejandro')
+insert into Actores values ('Beatriz')
+insert into Actores values ('Carlos')
+insert into Actores values ('David')
+
+insert into Productores values (1, 'BK')
+insert into Productores values (2, 'Papa')
+insert into Productores values (3, 'Walmart')
+insert into Productores values (4, 'Pali')
+
+insert into Ciudades values ('San Pedro', 1)
+insert into Ciudades values ('Escazu', 1)
+insert into Ciudades values ('Tibas', 1)
+
+insert into EmpresasRecolectoras values ('Municipalidad', 1)
+insert into EmpresasRecolectoras values ('Hoja Verde', 2)
+insert into EmpresasRecolectoras values ('Ciudad Limpia', 3)
+
+insert into ActoresXContrato values (1, 2)
+insert into ActoresXContrato values (2, 1)
+insert into ActoresXContrato values (3, 2)

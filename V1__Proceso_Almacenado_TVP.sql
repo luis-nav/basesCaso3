@@ -1,17 +1,10 @@
--- Author: Victoria Sandí Barrantes
--- Fecha: 26-04-2021
--- Desc: procedimiento almacenado 
------------------------------------------------------------
-
-
 CREATE TYPE NuevoContrato 
    AS TABLE
       ( InicioVigencia DATE,
 		FinalVigencia DATE,
 		ProductorID INT,
-		CostoContratoBruto DECIMAL(18,5),
+		CostoMensual DECIMAL(18,5),
 		MonedaID INT,
-		CostoContratoTotal DECIMAL(18,5),
 		TipoDeCambioID INT );
 GO
 
@@ -41,7 +34,7 @@ BEGIN
 	BEGIN TRY
 		SET @CustomError = 2001
 
-		INSERT INTO Contratos SELECT InicioVigencia, FinalVigencia, ProductorID, CostoContratoBruto, MonedaID, CostoContratoTotal, TipoDeCambioID 
+		INSERT INTO Contratos SELECT InicioVigencia, FinalVigencia, ProductorID, CostoMensual, MonedaID, TipoDeCambioID 
 		FROM @TVPContrato
 		SET @ContratoID = @@IDENTITY
 		INSERT INTO CiclosDeRecoleccion (Inicio, Frecuencia, ContratoID, LocalProductorID, LocalProductorXContratoID)
@@ -70,8 +63,8 @@ GO
 
 DECLARE @ContractTVP AS NuevoContrato;
 
-INSERT INTO @ContractTVP (InicioVigencia, FinalVigencia, ProductorID, CostoContratoBruto, MonedaID, CostoContratoTotal, TipoDeCambioID)
-   VALUES ('2023-04-25', '2023-12-25', 1, 150000, 1, 125000, 1)
+INSERT INTO @ContractTVP (InicioVigencia, FinalVigencia, ProductorID, CostoMensual, MonedaID, TipoDeCambioID)
+   VALUES (NULL, '2023-12-25', 1, 150000, 1, 1)
 
 EXEC SP_AgregarCicloContrato @ContractTVP, '2023-04-25 10:00:00', 7, 1, 1;
 
