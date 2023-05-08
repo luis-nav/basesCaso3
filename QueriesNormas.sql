@@ -1,3 +1,5 @@
+USE [esencialVerde]
+
 SELECT Loc.LocalID, Re.Nombre AS Residuo, SUM(CantidadRecipientes) * TiRec.Capacidad  as Cantidad, AccRec.Descripcion, Brand.Nombre
 FROM Locales Loc
 RIGHT JOIN RecipientesLogs RLog on Loc.LocalID = RLog.LocalID
