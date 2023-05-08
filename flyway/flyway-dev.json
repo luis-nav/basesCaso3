@@ -1,0 +1,14 @@
+{
+  "version": "2.0",
+  "name": "flyway",
+  "id": "44e172b6-e77b-4599-bfa1-f32e71edec32",
+  "databaseType": "SqlServer",
+  "development": {
+    "scriptsFolder": "schema-model"
+  },
+  "deployment": {
+    "flywayConfFiles": [
+      "flyway.conf"
+    ]
+  }
+}
