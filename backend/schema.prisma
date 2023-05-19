@@ -1,0 +1,827 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DB_URL")
+}
+
+model AccionesInventarios {
+  AccionInventarioID Int             @id(map: "PK_AccionesInventarios") @db.SmallInt
+  Descripcion        String          @db.VarChar(45)
+  InventoryLogs      InventoryLogs[]
+}
+
+model AccionesRecipientes {
+  AccionRecipienteID Int               @id(map: "PK_AccionesRecipientes") @default(autoincrement()) @db.SmallInt
+  Descripcion        String            @db.VarChar(30)
+  RecipientesLogs    RecipientesLogs[]
+}
+
+model Actores {
+  ActorID              Int                    @id(map: "PK_Actores") @default(autoincrement())
+  Nombre               String                 @db.NChar(35)
+  ActoresXContrato     ActoresXContrato[]
+  EmpresasRecolectoras EmpresasRecolectoras[]
+  Locales              Locales[]
+  Productores          Productores[]
+}
+
+model ActoresXContrato {
+  ActorXContratoID             Int                            @id(map: "PK_ActoresXContrato") @default(autoincrement())
+  ActorID                      Int
+  ContratoID                   Int
+  Actores                      Actores                        @relation(fields: [ActorID], references: [ActorID], onUpdate: NoAction, map: "FK_ActoresXContrato_Actores")
+  Contratos                    Contratos                      @relation(fields: [ContratoID], references: [ContratoID], onUpdate: NoAction, map: "FK_ActoresXContrato_Contratos")
+  PorcentajesActoresXContratos PorcentajesActoresXContratos[]
+}
+
+model AperturasCajas {
+  AperturaCajaID BigInt         @id(map: "PK_AperturasCajas") @default(autoincrement())
+  Monto          Decimal        @db.Decimal(18, 5)
+  TipoDeCambioID BigInt?
+  MonedaID       Int
+  PostTime       DateTime
+  IPAddress      String         @db.VarChar(20)
+  Username       String         @db.VarChar(45)
+  Checksum       Bytes          @db.VarBinary(150)
+  LocalID        Int
+  Locales        Locales        @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_AperturasCajas_Locales")
+  Monedas        Monedas        @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_AperturasCajas_Monedas")
+  TiposDeCambio  TiposDeCambio? @relation(fields: [TipoDeCambioID], references: [TipoDeCambioID], onDelete: NoAction, onUpdate: NoAction, map: "FK_AperturasCajas_TiposDeCambio")
+  CierresCajas   CierresCajas[]
+  Ventas         Ventas[]
+}
+
+model BalancesLogs {
+  BalanceLogID   BigInt         @id(map: "PK_BalancesLogs") @default(autoincrement())
+  MonedaID       Int
+  MontoTotal     Decimal        @db.Decimal(18, 2)
+  MontoA_adido   Decimal        @map("MontoAñadido") @db.Decimal(18, 2)
+  PostTime       DateTime
+  IPAddress      String         @db.VarChar(20)
+  Username       String         @db.VarChar(40)
+  Cheksum        Bytes          @db.VarBinary(150)
+  TipoDeCambioID BigInt
+  ProductorID    Int
+  InvoiceID      BigInt?
+  TransaccionID  BigInt?
+  Invoice        Invoice?       @relation(fields: [InvoiceID], references: [InvoiceID], onDelete: NoAction, onUpdate: NoAction, map: "FK_BalancesLogs_Invoice")
+  Monedas        Monedas        @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_BalancesLogs_Monedas")
+  Productores    Productores    @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_BalancesLogs_Productores")
+  TiposDeCambio  TiposDeCambio  @relation(fields: [TipoDeCambioID], references: [TipoDeCambioID], onUpdate: NoAction, map: "FK_BalancesLogs_TiposDeCambio")
+  Transacciones  Transacciones? @relation(fields: [TransaccionID], references: [TransaccionID], onDelete: NoAction, onUpdate: NoAction, map: "FK_BalancesLogs_Transacciones")
+}
+
+model BrandsRecipientes {
+  BrandRecipienteID Int                @id(map: "PK_BrandsRecipientes") @default(autoincrement())
+  Nombre            String             @db.NChar(45)
+  TiposRecipientes  TiposRecipientes[]
+}
+
+model CalidadesRecipientes {
+  CalidadRecipienteID      Int                        @id(map: "PK_CalidadesRecipientes") @default(autoincrement()) @db.SmallInt
+  Calidad                  String                     @db.VarChar(25)
+  CalidadesRecipientesLogs CalidadesRecipientesLogs[]
+}
+
+model CalidadesRecipientesLogs {
+  CalidadRecipienteLogID BigInt               @id(map: "PK_CalidadesRecipientesLogs") @default(autoincrement())
+  Hora                   DateTime             @default(dbgenerated("sysutcdatetime()"), map: "DF_CalidadesRecipientesLogs_Hora")
+  RecipienteID           Int
+  CalidadRecipienteID    Int                  @db.SmallInt
+  IPAddress              String               @db.VarChar(20)
+  Username               String               @db.VarChar(45)
+  Checksum               Bytes                @db.VarBinary(150)
+  CalidadesRecipientes   CalidadesRecipientes @relation(fields: [CalidadRecipienteID], references: [CalidadRecipienteID], onUpdate: NoAction, map: "FK_CalidadesRecipientesLogs_CalidadesRecipientes")
+  TiposRecipientes       TiposRecipientes     @relation(fields: [RecipienteID], references: [TipoRecipienteID], onUpdate: NoAction, map: "FK_CalidadesRecipientesLogs_Recipientes")
+}
+
+model Camiones {
+  CamionID Int     @id(map: "PK_Camiones") @default(autoincrement())
+  Placa    String  @db.NChar(10)
+  LocalID  Int
+  Locales  Locales @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_Camiones_Locales")
+}
+
+model CiclosDeRecoleccion {
+  CicloDeRecoleccionID         Int                          @id(map: "PK_CiclosDeRecoleccion") @default(autoincrement())
+  Inicio                       DateTime
+  Frecuencia                   Int?                         @default(7, map: "DF_CiclosDeRecoleccion_Frecuencia")
+  ContratoID                   Int
+  LocalProductorID             BigInt
+  LocalProductorXContratoID    BigInt
+  Contratos                    Contratos                    @relation(fields: [ContratoID], references: [ContratoID], onUpdate: NoAction, map: "FK_CiclosDeRecoleccion_Contratos")
+  LocalesProductores           LocalesProductores           @relation(fields: [LocalProductorID], references: [LocalProductorID], onUpdate: NoAction, map: "FK_CiclosDeRecoleccion_LocalesProductores")
+  LocalesProductoresXContratos LocalesProductoresXContratos @relation(fields: [LocalProductorXContratoID], references: [LocalProductorXContratoID], onUpdate: NoAction, map: "FK_CiclosDeRecoleccion_LocalesProductoresXContratos")
+  VolumenesRecoleccion         VolumenesRecoleccion[]
+}
+
+model CierresCajas {
+  CierreCajaID   BigInt         @id(map: "PK_CierresCajas") @default(autoincrement())
+  AperturaCajaID BigInt
+  Monto          Decimal        @db.Decimal(18, 5)
+  LocalID        Int
+  IPAddress      String         @db.VarChar(20)
+  Username       String         @db.VarChar(45)
+  Checksum       Bytes          @db.VarBinary(150)
+  AperturasCajas AperturasCajas @relation(fields: [AperturaCajaID], references: [AperturaCajaID], onUpdate: NoAction, map: "FK_CierresCajas_AperturasCajas")
+  Locales        Locales        @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_CierresCajas_Locales")
+}
+
+model Ciudades {
+  CiudadID    Int           @id(map: "PK_Ciudades") @default(autoincrement())
+  Nombre      String        @db.NChar(40)
+  EstadoID    Int
+  Estados     Estados       @relation(fields: [EstadoID], references: [EstadoID], onUpdate: NoAction, map: "FK_Ciudades_Estados")
+  Regiones    Regiones[]
+  Ubicaciones Ubicaciones[]
+}
+
+model ContactosXEmpresasRecolectoras {
+  ContactoXEmpresaRecolectoraID BigInt                @id(map: "PK_ContactosXEmpresasRecolectoras") @default(autoincrement())
+  ValorContactoID               BigInt
+  EmpresaRecolectoraID          Int?
+  EmpresasRecolectoras          EmpresasRecolectoras? @relation(fields: [EmpresaRecolectoraID], references: [EmpresaRecolectoraID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ContactosXEmpresasRecolectoras_EmpresasRecolectoras")
+  ValoresContactos              ValoresContactos      @relation(fields: [ValorContactoID], references: [ValorContactoID], onUpdate: NoAction, map: "FK_ContactosXEmpresasRecolectoras_ValoresContactos")
+}
+
+model ContactosXLocales {
+  ContactoXLocalID BigInt           @id(map: "PK_ContactosXLocales") @default(autoincrement())
+  ValorContactoID  BigInt
+  LocalID          Int?
+  Locales          Locales?         @relation(fields: [LocalID], references: [LocalID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ContactosXLocales_Locales")
+  ValoresContactos ValoresContactos @relation(fields: [ValorContactoID], references: [ValorContactoID], onUpdate: NoAction, map: "FK_ContactosXLocales_ValoresContactos")
+}
+
+model ContactosXLocalesProductores {
+  ContactoXLocalProductorID BigInt             @id(map: "PK_ContactosXLocalesProductores") @default(autoincrement())
+  ValorContactoID           BigInt
+  LocalProductorID          BigInt
+  LocalesProductores        LocalesProductores @relation(fields: [LocalProductorID], references: [LocalProductorID], onUpdate: NoAction, map: "FK_ContactosXLocalesProductores_LocalesProductores")
+  ValoresContactos          ValoresContactos   @relation(fields: [ValorContactoID], references: [ValorContactoID], onUpdate: NoAction, map: "FK_ContactosXLocalesProductores_ValoresContactos")
+}
+
+model ContactosXProductores {
+  ConctactoXProductorID BigInt           @id(map: "PK_ContactosXProductores") @default(autoincrement())
+  ValorContactoID       BigInt
+  ProductorID           Int
+  Productores           Productores      @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_ContactosXProductores_Productores")
+  ValoresContactos      ValoresContactos @relation(fields: [ValorContactoID], references: [ValorContactoID], onUpdate: NoAction, map: "FK_ContactosXProductores_ValoresContactos")
+}
+
+model Contratos {
+  ContratoID                   Int                            @id(map: "PK_Contratos") @default(autoincrement())
+  InicioVigencia               DateTime                       @db.Date
+  FinalVigencia                DateTime                       @db.Date
+  ProductorID                  Int
+  CostoMensual                 Decimal                        @db.Decimal(18, 5)
+  MonedaID                     Int
+  TipoDeCambioID               BigInt?
+  ActoresXContrato             ActoresXContrato[]
+  CiclosDeRecoleccion          CiclosDeRecoleccion[]
+  Monedas                      Monedas                        @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_Contratos_Monedas")
+  Productores                  Productores                    @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_Contratos_Productores")
+  TiposDeCambio                TiposDeCambio?                 @relation(fields: [TipoDeCambioID], references: [TipoDeCambioID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Contratos_TiposDeCambio")
+  EstadosContratosLogs         EstadosContratosLogs[]
+  LocalesProductoresXContratos LocalesProductoresXContratos[]
+  PagosDeudasAmbientales       PagosDeudasAmbientales[]
+  RecipientesLogs              RecipientesLogs[]
+}
+
+model ConversionesDeMedidas {
+  ConversionDeMedidaID                                                     Int               @id(map: "PK_ConversionesDeMedidas") @default(autoincrement())
+  PrimeraUnidad                                                            Int               @db.SmallInt
+  SegundaUnidad                                                            Int               @db.SmallInt
+  ProporcionPrimera                                                        Decimal           @db.Decimal(18, 5)
+  ProporcionSegunda                                                        Decimal           @db.Decimal(18, 5)
+  UnidadesDeMedidas_ConversionesDeMedidas_PrimeraUnidadToUnidadesDeMedidas UnidadesDeMedidas @relation("ConversionesDeMedidas_PrimeraUnidadToUnidadesDeMedidas", fields: [PrimeraUnidad], references: [UnidadDeMedidaID], onUpdate: NoAction, map: "FK_ConversionesDeMedidas_UnidadesDeMedidas")
+  UnidadesDeMedidas_ConversionesDeMedidas_SegundaUnidadToUnidadesDeMedidas UnidadesDeMedidas @relation("ConversionesDeMedidas_SegundaUnidadToUnidadesDeMedidas", fields: [SegundaUnidad], references: [UnidadDeMedidaID], onUpdate: NoAction, map: "FK_ConversionesDeMedidas_UnidadesDeMedidas1")
+}
+
+model CostosProcesosXPaises {
+  CostoProcesoXPaisID  Int                    @id(map: "PK_CostosProcesosXPaises") @default(autoincrement())
+  Tarifa               Decimal                @db.Decimal(18, 5)
+  EstadoID             Int?
+  PaisID               Int
+  MonedaID             Int
+  InicioVigencia       DateTime
+  FinalVigencia        DateTime
+  Default              Boolean
+  IPAddress            String                 @db.VarChar(20)
+  Username             String                 @db.VarChar(45)
+  Checksum             Bytes                  @db.VarBinary(150)
+  ProcesoResiduoID     Int
+  Monedas              Monedas                @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_CostosProcesosXPaises_Monedas")
+  Paises               Paises                 @relation(fields: [PaisID], references: [PaisID], onUpdate: NoAction, map: "FK_CostosProcesosXPaises_Paises")
+  ProcesosResiduos     ProcesosResiduos       @relation(fields: [ProcesoResiduoID], references: [ProcesoResiduoID], onUpdate: NoAction, map: "FK_CostosProcesosXPaises_ProcesosResiduos")
+  ProcesosResiduosLogs ProcesosResiduosLogs[]
+
+  @@index([CostoProcesoXPaisID(sort: Desc)], map: "IX_CostosProcesosXPaises")
+}
+
+model Culturas {
+  CulturaID    Int            @id(map: "PK_Culturas") @default(autoincrement()) @db.SmallInt
+  IdiomaID     Int            @db.SmallInt
+  PaisID       Int?
+  Default      Boolean        @default(false, map: "DF_Culturas_Default")
+  Idiomas      Idiomas        @relation(fields: [IdiomaID], references: [IdiomaID], onUpdate: NoAction, map: "FK_Culturas_Idiomas")
+  Paises       Paises?        @relation(fields: [PaisID], references: [PaisID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Culturas_Paises")
+  Traducciones Traducciones[]
+}
+
+model EmpresasRecolectoras {
+  EmpresaRecolectoraID           Int                              @id(map: "PK_EmpresasRecolectoras") @default(autoincrement())
+  Nombre                         String                           @db.VarChar(25)
+  ActorID                        Int?
+  ContactosXEmpresasRecolectoras ContactosXEmpresasRecolectoras[]
+  Actores                        Actores?                         @relation(fields: [ActorID], references: [ActorID], onDelete: NoAction, onUpdate: NoAction, map: "FK_EmpresasRecolectoras_Actores")
+}
+
+model Estados {
+  EstadoID    Int           @id(map: "PK_Estados") @default(autoincrement())
+  Nombre      String        @db.NChar(40)
+  PaisID      Int
+  Ciudades    Ciudades[]
+  Paises      Paises        @relation(fields: [PaisID], references: [PaisID], onUpdate: NoAction, map: "FK_Estados_Paises")
+  Regiones    Regiones[]
+  Ubicaciones Ubicaciones[]
+}
+
+model EstadosContratos {
+  EstadoContratoID     Int                    @id(map: "PK_EstadosContratos") @default(autoincrement()) @db.SmallInt
+  Descripcion          String                 @db.VarChar(20)
+  EstadosContratosLogs EstadosContratosLogs[]
+}
+
+model EstadosContratosLogs {
+  EstadoContratoLogID BigInt           @id(map: "PK_EstadosContratosLogs") @default(autoincrement())
+  EstadoContratoID    Int              @db.SmallInt
+  ContratoID          Int
+  IPAddress           String           @db.VarChar(20)
+  Username            String           @db.VarChar(45)
+  Checksum            Bytes            @db.VarBinary(150)
+  Contratos           Contratos        @relation(fields: [ContratoID], references: [ContratoID], onUpdate: NoAction, map: "FK_EstadosContratosLogs_Contratos")
+  EstadosContratos    EstadosContratos @relation(fields: [EstadoContratoID], references: [EstadoContratoID], onUpdate: NoAction, map: "FK_EstadosContratosLogs_EstadosContratos")
+}
+
+model EventsLogs {
+  EventLogID   BigInt        @id(map: "PK_EventsLogs") @default(autoincrement())
+  PostTime     DateTime      @default(dbgenerated("sysutcdatetime()"), map: "DF_EventsLogs_PostTime")
+  IPAddress    String        @db.VarChar(20)
+  Username     String        @db.VarChar(45)
+  Checksum     Bytes         @db.VarBinary(150)
+  Descripcion  String        @db.VarChar(80)
+  ReferenceID1 BigInt
+  ReferenceID2 BigInt?
+  Value1       String        @db.VarChar(60)
+  Value2       String?       @db.VarChar(60)
+  LevelID      Int?
+  SourceID     Int?
+  TipoEventoID Int?
+  TipoObjetoID Int?
+  Levels       Levels?       @relation(fields: [LevelID], references: [LevelID], onDelete: NoAction, onUpdate: NoAction, map: "FK_EventsLogs_Levels")
+  Sources      Sources?      @relation(fields: [SourceID], references: [SourceID], onDelete: NoAction, onUpdate: NoAction, map: "FK_EventsLogs_Sources")
+  TiposEventos TiposEventos? @relation(fields: [TipoEventoID], references: [TipoEventoID], onDelete: NoAction, onUpdate: NoAction, map: "FK_EventsLogs_TiposEventos")
+  TiposObjetos TiposObjetos? @relation(fields: [TipoObjetoID], references: [TipoObjetoID], onDelete: NoAction, onUpdate: NoAction, map: "FK_EventsLogs_TiposObjetos")
+}
+
+model Idiomas {
+  IdiomaID Int        @id(map: "PK_Idiomas") @default(autoincrement()) @db.SmallInt
+  Nombre   String?    @db.NChar(20)
+  Culturas Culturas[]
+}
+
+model InventoryLogs {
+  InventoryLogID       BigInt                @id(map: "PK_InventoryLogs") @default(autoincrement())
+  PostTime             DateTime
+  AccionInventarioID   Int                   @db.SmallInt
+  ProductoID           Int
+  LocalID              Int
+  ProcesoResiduoLogID  BigInt?
+  Cantidad             Int
+  IPAddress            String                @db.VarChar(20)
+  Username             String                @db.VarChar(45)
+  Checksum             Bytes                 @db.VarBinary(150)
+  AccionesInventarios  AccionesInventarios   @relation(fields: [AccionInventarioID], references: [AccionInventarioID], onUpdate: NoAction, map: "FK_InventoryLogs_AccionesInventarios")
+  Locales              Locales               @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_InventoryLogs_Locales")
+  ProcesosResiduosLogs ProcesosResiduosLogs? @relation(fields: [ProcesoResiduoLogID], references: [ProcesoResiduoLogID], onDelete: NoAction, onUpdate: NoAction, map: "FK_InventoryLogs_ProcesosResiduosLogs")
+  Productos            Productos             @relation(fields: [ProductoID], references: [ProductoID], onUpdate: NoAction, map: "FK_InventoryLogs_Productos")
+}
+
+model Invoice {
+  InvoiceID    BigInt         @id(map: "PK_Invoice") @default(autoincrement())
+  MonedaID     Int
+  Monto        Decimal        @db.Decimal(18, 2)
+  PostTime     DateTime
+  IPAddress    String         @db.VarChar(20)
+  Username     String         @db.VarChar(45)
+  Checksum     Bytes          @db.VarBinary(150)
+  ProductorID  Int
+  BalancesLogs BalancesLogs[]
+  Monedas      Monedas        @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_Invoice_Monedas")
+  Productores  Productores    @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_Invoice_Productores")
+  Payments     Payments[]
+}
+
+model Levels {
+  LevelID     Int          @id(map: "PK_Levels")
+  Descripcion String       @db.VarChar(45)
+  EventsLogs  EventsLogs[]
+}
+
+model Locales {
+  LocalID                  Int                        @id(map: "PK_Locales") @default(autoincrement())
+  UbicacionID              Int
+  ActorID                  Int?
+  RegionID                 Int
+  AperturasCajas           AperturasCajas[]
+  Camiones                 Camiones[]
+  CierresCajas             CierresCajas[]
+  ContactosXLocales        ContactosXLocales[]
+  InventoryLogs            InventoryLogs[]
+  Actores                  Actores?                   @relation(fields: [ActorID], references: [ActorID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Locales_Actores")
+  Regiones                 Regiones                   @relation(fields: [RegionID], references: [RegionID], onUpdate: NoAction, map: "FK_Locales_Regiones")
+  Ubicaciones              Ubicaciones                @relation(fields: [UbicacionID], references: [UbicacionID], onUpdate: NoAction, map: "FK_Locales_Ubicaciones")
+  LotesDesechos            LotesDesechos[]
+  ProcesosResiduosLogs     ProcesosResiduosLogs[]
+  RecipientesLogs          RecipientesLogs[]
+  TiposRecipientesXLocales TiposRecipientesXLocales[]
+}
+
+model LocalesProductores {
+  LocalProductorID             BigInt                         @id(map: "PK_LocalesProductores") @default(autoincrement())
+  UbicacionID                  Int
+  ProductorID                  Int
+  ActorID                      Int?
+  CiclosDeRecoleccion          CiclosDeRecoleccion[]
+  ContactosXLocalesProductores ContactosXLocalesProductores[]
+  Productores                  Productores                    @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_LocalesProductores_Productores")
+  Ubicaciones                  Ubicaciones                    @relation(fields: [UbicacionID], references: [UbicacionID], onUpdate: NoAction, map: "FK_LocalesProductores_Ubicaciones")
+  LocalesProductoresXContratos LocalesProductoresXContratos[]
+  Ventas                       Ventas[]
+}
+
+model LocalesProductoresXContratos {
+  LocalProductorXContratoID BigInt                @id(map: "PK_LocalesProductoresXContratos") @default(autoincrement())
+  ContratoID                Int
+  LocalProductorID          BigInt
+  Detalles                  String?               @db.VarChar(100)
+  CiclosDeRecoleccion       CiclosDeRecoleccion[]
+  Contratos                 Contratos             @relation(fields: [ContratoID], references: [ContratoID], onUpdate: NoAction, map: "FK_LocalesProductoresXContratos_Contratos")
+  LocalesProductores        LocalesProductores    @relation(fields: [LocalProductorID], references: [LocalProductorID], onUpdate: NoAction, map: "FK_LocalesProductoresXContratos_LocalesProductores")
+}
+
+model LotesDesechos {
+  LoteDesechoID        BigInt                 @id(map: "PK_LotesDesechos") @default(autoincrement())
+  LocalID              Int
+  ResiduoID            Int
+  HoraApertura         DateTime
+  IPAddress            String                 @db.VarChar(20)
+  Username             String                 @db.VarChar(45)
+  Checksum             Bytes                  @db.VarBinary(150)
+  Locales              Locales                @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_LotesDesechos_Locales")
+  Residuos             Residuos               @relation(fields: [ResiduoID], references: [ResiduoID], onUpdate: NoAction, map: "FK_LotesDesechos_Residuos")
+  ProcesosResiduosLogs ProcesosResiduosLogs[]
+  RecipientesLogs      RecipientesLogs[]
+}
+
+model Monedas {
+  MonedaID                Int                       @id(map: "PK_Monedas") @default(autoincrement())
+  Nombre                  String                    @db.VarChar(30)
+  Acronimo                String                    @db.NChar(5)
+  MonedaBase              Boolean                   @default(false, map: "DF_Monedas_MonedaBase")
+  Simbolo                 String?                   @db.NChar(5)
+  AperturasCajas          AperturasCajas[]
+  BalancesLogs            BalancesLogs[]
+  Contratos               Contratos[]
+  CostosProcesosXPaises   CostosProcesosXPaises[]
+  Invoice                 Invoice[]
+  PagosDeudasAmbientales  PagosDeudasAmbientales[]
+  Paises                  Paises[]
+  Payments                Payments[]
+  PreciosProductosXPaises PreciosProductosXPaises[]
+  TiposDeCambio           TiposDeCambio[]
+  Transacciones           Transacciones[]
+  Ventas                  Ventas[]
+}
+
+model PagosDeudasAmbientales {
+  PagoDeudaAmbientalID                                               Int             @id(map: "PK_PagosDeudasAmbientales") @default(autoincrement())
+  ProductorID                                                        Int
+  Monto                                                              Decimal         @db.Decimal(18, 5)
+  MonedaID                                                           Int
+  ContratoID                                                         Int
+  ProductorAyudadoID                                                 Int
+  Contratos                                                          Contratos       @relation(fields: [ContratoID], references: [ContratoID], onUpdate: NoAction, map: "FK_PagosDeudasAmbientales_Contratos")
+  Monedas                                                            Monedas         @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_PagosDeudasAmbientales_Monedas")
+  Productores_PagosDeudasAmbientales_ProductorIDToProductores        Productores     @relation("PagosDeudasAmbientales_ProductorIDToProductores", fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_PagosDeudasAmbientales_Productores")
+  Productores_PagosDeudasAmbientales_ProductorAyudadoIDToProductores Productores     @relation("PagosDeudasAmbientales_ProductorAyudadoIDToProductores", fields: [ProductorAyudadoID], references: [ProductorID], onUpdate: NoAction, map: "FK_PagosDeudasAmbientales_Productores1")
+  Transacciones                                                      Transacciones[]
+}
+
+model Paises {
+  PaisID                  Int                       @id(map: "PK_Paises") @default(autoincrement())
+  Nombre                  String                    @db.NChar(40)
+  MonedaID                Int?
+  Acronimo                String                    @db.NChar(8)
+  CostosProcesosXPaises   CostosProcesosXPaises[]
+  Culturas                Culturas[]
+  Estados                 Estados[]
+  Monedas                 Monedas?                  @relation(fields: [MonedaID], references: [MonedaID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Paises_Monedas")
+  PreciosProductosXPaises PreciosProductosXPaises[]
+  Ubicaciones             Ubicaciones[]
+}
+
+model Payments {
+  PaymentID   BigInt      @id(map: "PK_Payments") @default(autoincrement())
+  MonedaID    Int
+  Monto       Decimal     @db.Decimal(18, 2)
+  PostTime    DateTime
+  IPAddress   String      @db.VarChar(20)
+  Username    String      @db.VarChar(45)
+  Checksum    Bytes       @db.VarBinary(150)
+  InvoiceID   BigInt
+  ProductorID Int
+  Invoice     Invoice     @relation(fields: [InvoiceID], references: [InvoiceID], onUpdate: NoAction, map: "FK_Payments_Invoice")
+  Monedas     Monedas     @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_Payments_Monedas")
+  Productores Productores @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_Payments_Productores")
+}
+
+model PorcentajesActoresXContratos {
+  PorcentajeActoresXContratosID BigInt           @id(map: "PK_PorcentajesActoresXContratos") @default(autoincrement())
+  Porcentaje                    Decimal          @db.Decimal(18, 5)
+  InicioVIgencia                DateTime
+  FinalVigencia                 DateTime?
+  default                       Boolean
+  IPAddress                     String           @db.VarChar(20)
+  Username                      String           @db.VarChar(40)
+  Checksum                      Bytes            @db.VarBinary(150)
+  ActoresXContratoID            Int
+  ActoresXContrato              ActoresXContrato @relation(fields: [ActoresXContratoID], references: [ActorXContratoID], onUpdate: NoAction, map: "FK_PorcentajesActoresXContratos_ActoresXContrato")
+}
+
+model PreciosProductosXPaises {
+  PrecioProductoXPaisID BigInt             @id(map: "PK_PreciosProductosXPaises") @default(autoincrement())
+  Precio                Decimal            @db.Decimal(18, 5)
+  MonedaID              Int
+  Vigente               Boolean
+  InicioVigencia        DateTime
+  FinalVigencia         DateTime?
+  ProductoID            Int
+  IPAddress             String             @db.VarChar(20)
+  Username              String             @db.VarChar(45)
+  Checksum              Bytes              @db.VarBinary(150)
+  PaisID                Int
+  Monedas               Monedas            @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_PreciosProductosXPaises_Monedas")
+  Paises                Paises             @relation(fields: [PaisID], references: [PaisID], onUpdate: NoAction, map: "FK_PreciosProductosXPaises_Paises")
+  Productos             Productos          @relation(fields: [ProductoID], references: [ProductoID], onUpdate: NoAction, map: "FK_PreciosProductosXPaises_Productos")
+  ProductosXVentas      ProductosXVentas[]
+}
+
+model ProcesosResiduos {
+  ProcesoResiduoID      Int                     @id(map: "PK_ProcesosResiduos") @default(autoincrement())
+  ResiduoID             Int
+  DesechoReciclable     Boolean
+  Nombre                String                  @db.NChar(35)
+  Descripcion           String?                 @db.VarChar(150)
+  CostosProcesosXPaises CostosProcesosXPaises[]
+  Residuos              Residuos                @relation(fields: [ResiduoID], references: [ResiduoID], onUpdate: NoAction, map: "FK_ProcesosResiduos_Residuos")
+  Productos             Productos[]
+  ResultadosProcesos    ResultadosProcesos[]
+}
+
+model ProcesosResiduosLogs {
+  ProcesoResiduoLogID   BigInt                @id(map: "PK_ProcesosReciduosLogs") @default(autoincrement())
+  LocalID               Int
+  CostoProcesoXPaisID   Int
+  ResiduoID             Int
+  Hora                  DateTime
+  IPAddress             String                @db.VarChar(20)
+  Username              String                @db.VarChar(45)
+  Checksum              Bytes                 @db.VarBinary(150)
+  LoteDesechoID         BigInt
+  InventoryLogs         InventoryLogs[]
+  CostosProcesosXPaises CostosProcesosXPaises @relation(fields: [CostoProcesoXPaisID], references: [CostoProcesoXPaisID], onUpdate: NoAction, map: "FK_ProcesosResiduosLogs_CostosProcesosXPaises")
+  Locales               Locales               @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_ProcesosResiduosLogs_Locales")
+  LotesDesechos         LotesDesechos         @relation(fields: [LoteDesechoID], references: [LoteDesechoID], onUpdate: NoAction, map: "FK_ProcesosResiduosLogs_LotesDesechos")
+  Residuos              Residuos              @relation(fields: [ResiduoID], references: [ResiduoID], onUpdate: NoAction, map: "FK_ProcesosResiduosLogs_Residuos")
+}
+
+model Productores {
+  ProductorID                                                                   Int                       @id(map: "PK_Productores") @default(autoincrement())
+  ActorID                                                                       Int?
+  Nombre                                                                        String                    @db.NChar(50)
+  BalancesLogs                                                                  BalancesLogs[]
+  ContactosXProductores                                                         ContactosXProductores[]
+  Contratos                                                                     Contratos[]
+  Invoice                                                                       Invoice[]
+  LocalesProductores                                                            LocalesProductores[]
+  PagosDeudasAmbientales_PagosDeudasAmbientales_ProductorIDToProductores        PagosDeudasAmbientales[]  @relation("PagosDeudasAmbientales_ProductorIDToProductores")
+  PagosDeudasAmbientales_PagosDeudasAmbientales_ProductorAyudadoIDToProductores PagosDeudasAmbientales[]  @relation("PagosDeudasAmbientales_ProductorAyudadoIDToProductores")
+  Payments                                                                      Payments[]
+  Actores                                                                       Actores?                  @relation(fields: [ActorID], references: [ActorID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Productores_Actores")
+  PuntuacionesAmbientales                                                       PuntuacionesAmbientales[]
+  Transacciones_Transacciones_OrigenIDToProductores                             Transacciones[]           @relation("Transacciones_OrigenIDToProductores")
+  Transacciones_Transacciones_DestinatarioIDToProductores                       Transacciones[]           @relation("Transacciones_DestinatarioIDToProductores")
+  Ventas                                                                        Ventas[]
+}
+
+model Productos {
+  ProductoID              Int                       @id(map: "PK_Productos") @default(autoincrement())
+  Nombre                  String                    @db.NChar(25)
+  Descripcion             String                    @db.VarChar(45)
+  Enable                  Boolean
+  ProcesoID               Int
+  InventoryLogs           InventoryLogs[]
+  PreciosProductosXPaises PreciosProductosXPaises[]
+  ProcesosResiduos        ProcesosResiduos          @relation(fields: [ProcesoID], references: [ProcesoResiduoID], onUpdate: NoAction, map: "FK_Productos_ProcesosResiduos")
+  ProductosXVentas        ProductosXVentas[]
+}
+
+model ProductosXVentas {
+  ProductoXVentaID        BigInt                  @id(map: "PK_ProductosXVentas") @default(autoincrement())
+  ProductoID              Int
+  PrecioProductoID        BigInt
+  VentaID                 BigInt
+  PreciosProductosXPaises PreciosProductosXPaises @relation(fields: [PrecioProductoID], references: [PrecioProductoXPaisID], onUpdate: NoAction, map: "FK_ProductosXVentas_PreciosProductosXPaises")
+  Productos               Productos               @relation(fields: [ProductoID], references: [ProductoID], onUpdate: NoAction, map: "FK_ProductosXVentas_Productos")
+  Ventas                  Ventas                  @relation(fields: [VentaID], references: [VentaID], onUpdate: NoAction, map: "FK_ProductosXVentas_Ventas")
+}
+
+model PuntuacionesAmbientales {
+  PuntuacionAmbientalID Int         @id(map: "PK_PuntuacionesAmbientales") @default(autoincrement())
+  ProductorID           Int
+  InicioVigencia        DateTime    @db.Date
+  FinalVigencia         DateTime    @db.Date
+  Default               Boolean
+  IPAddress             String      @db.VarChar(20)
+  Username              String      @db.VarChar(45)
+  Checksum              Bytes       @db.VarBinary(150)
+  Productores           Productores @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_PuntuacionesAmbientales_Productores")
+}
+
+model RecipientesLogs {
+  RecipienteLogID     BigInt              @id(map: "PK_EstadosRecipientesLogs") @default(autoincrement())
+  Hora                DateTime            @default(dbgenerated("sysutcdatetime()"), map: "DF_EstadosRecipientesLogs_Hora")
+  TipoRecipienteID    Int
+  IPAddress           String              @db.VarChar(20)
+  Username            String              @db.VarChar(45)
+  Checksum            Bytes               @db.VarBinary(150)
+  LocalID             Int
+  AccionRecipienteID  Int                 @db.SmallInt
+  CantidadRecipientes Int
+  ResiduoID           Int?
+  CamionID            Int?
+  EntregadoPor        String?             @db.NChar(40)
+  ContratoID          Int?
+  LoteDesechoID       BigInt?
+  TiposRecipientes    TiposRecipientes    @relation(fields: [TipoRecipienteID], references: [TipoRecipienteID], onUpdate: NoAction, map: "FK_EstadosRecipientesLogs_Recipientes")
+  Contratos           Contratos?          @relation(fields: [ContratoID], references: [ContratoID], onDelete: NoAction, onUpdate: NoAction, map: "FK_RecipientesLogs_Contratos")
+  LotesDesechos       LotesDesechos?      @relation(fields: [LoteDesechoID], references: [LoteDesechoID], onDelete: NoAction, onUpdate: NoAction, map: "FK_RecipientesLogs_LotesDesechos")
+  AccionesRecipientes AccionesRecipientes @relation(fields: [AccionRecipienteID], references: [AccionRecipienteID], onUpdate: NoAction, map: "FK_RecipientesXLocalesLogs_AccionesRecipientes")
+  Locales             Locales             @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_RecipientesXLocalesLogs_Locales")
+  Residuos            Residuos?           @relation(fields: [ResiduoID], references: [ResiduoID], onDelete: NoAction, onUpdate: NoAction, map: "FK_RecipientesXLocalesLogs_Residuos")
+
+  @@index([Hora, AccionRecipienteID, ResiduoID], map: "IX_RecipientesLogs")
+}
+
+model Regiones {
+  RegionID    Int           @id(map: "PK_Regiones") @default(autoincrement())
+  Nombre      String        @db.NChar(40)
+  Descripcion String?       @db.NChar(80)
+  CiudadID    Int?
+  EstadoID    Int
+  Locales     Locales[]
+  Ciudades    Ciudades?     @relation(fields: [CiudadID], references: [CiudadID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Regiones_Ciudades")
+  Estados     Estados       @relation(fields: [EstadoID], references: [EstadoID], onUpdate: NoAction, map: "FK_Regiones_Estados")
+  Ubicaciones Ubicaciones[]
+}
+
+model Residuos {
+  ResiduoID            Int                    @id(map: "PK_Residuos") @default(autoincrement())
+  Nombre               String                 @db.VarChar(30)
+  TipoResiduoID        Int
+  UnidadDeMedidaID     Int                    @db.SmallInt
+  LotesDesechos        LotesDesechos[]
+  ProcesosResiduos     ProcesosResiduos[]
+  ProcesosResiduosLogs ProcesosResiduosLogs[]
+  RecipientesLogs      RecipientesLogs[]
+  TiposResiduos        TiposResiduos          @relation(fields: [TipoResiduoID], references: [TipoResiduoID], onUpdate: NoAction, map: "FK_Residuos_TiposResiduos")
+  UnidadesDeMedidas    UnidadesDeMedidas      @relation(fields: [UnidadDeMedidaID], references: [UnidadDeMedidaID], onUpdate: NoAction, map: "FK_Residuos_UnidadesDeMedidas")
+  VolumenesRecoleccion VolumenesRecoleccion[]
+}
+
+model ResultadosProcesos {
+  ResultadoProcesoID Int              @id(map: "PK_ResultadosProcesos") @default(autoincrement())
+  ProcesoResiduoID   Int
+  ProcesosResiduos   ProcesosResiduos @relation(fields: [ProcesoResiduoID], references: [ProcesoResiduoID], onUpdate: NoAction, map: "FK_ResultadosProcesos_ProcesosResiduos")
+}
+
+model Sources {
+  SourceID   Int          @id(map: "PK_Sources") @default(autoincrement())
+  Nombre     String       @db.VarChar(45)
+  EventsLogs EventsLogs[]
+}
+
+model sysdiagrams {
+  name         String @db.NVarChar(128)
+  principal_id Int
+  diagram_id   Int    @id(map: "PK__sysdiagr__C2B05B6166125814") @default(autoincrement())
+  version      Int?
+  definition   Bytes?
+
+  @@unique([principal_id, name], map: "UK_principal_name")
+}
+
+model TiposContactos {
+  TipoContactoID   Int                @id(map: "PK_TiposContactos") @default(autoincrement())
+  Nombre           String             @db.VarChar(20)
+  ValoresContactos ValoresContactos[]
+}
+
+model TiposDeCambio {
+  TipoDeCambioID BigInt           @id(map: "PK_TiposDeCambio") @default(autoincrement())
+  MonedaID       Int
+  InicioVigencia DateTime         @default(dbgenerated("sysutcdatetime()"), map: "DF_TiposDeCambio_InicioVigencia")
+  FinalVigencia  DateTime
+  Default        Boolean
+  PrecioCambio   Decimal          @db.Decimal(18, 5)
+  IPAddress      String           @db.VarChar(20)
+  Username       String           @db.VarChar(50)
+  Checksum       Bytes            @db.VarBinary(150)
+  AperturasCajas AperturasCajas[]
+  BalancesLogs   BalancesLogs[]
+  Contratos      Contratos[]
+  Monedas        Monedas          @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_TiposDeCambio_Monedas")
+  Ventas         Ventas[]
+
+  @@index([Default(sort: Desc)], map: "IX_TiposDeCambio")
+}
+
+model TiposDeContratos {
+  TipoDeContratoID Int    @id(map: "PK_TiposDeContratos") @db.SmallInt
+  Descripcion      String @db.VarChar(25)
+}
+
+model TiposDePagos {
+  TipoDePagoID Int      @id(map: "PK_TiposDePagos") @default(autoincrement()) @db.SmallInt
+  Descripcion  String   @db.VarChar(20)
+  Ventas       Ventas[]
+}
+
+model TiposEventos {
+  TipoEventoID Int          @id(map: "PK_TiposEventos") @default(autoincrement())
+  Nombre       String       @db.VarChar(45)
+  EventsLogs   EventsLogs[]
+}
+
+model TiposObjetos {
+  TipoObjetoID Int            @id(map: "PK_TiposObjetos") @default(autoincrement())
+  Nombre       String         @db.VarChar(45)
+  EventsLogs   EventsLogs[]
+  Traducciones Traducciones[]
+}
+
+model TiposRecipientes {
+  TipoRecipienteID         Int                        @id(map: "PK_Recipientes") @default(autoincrement())
+  TipoResiduoID            Int
+  Capacidad                Decimal                    @db.Decimal(18, 5)
+  UnidadDeMedidaID         Int                        @db.SmallInt
+  BrandRecipienteID        Int
+  CalidadesRecipientesLogs CalidadesRecipientesLogs[]
+  RecipientesLogs          RecipientesLogs[]
+  TiposResiduos            TiposResiduos              @relation(fields: [TipoResiduoID], references: [TipoResiduoID], onUpdate: NoAction, map: "FK_Recipientes_TiposResiduos")
+  UnidadesDeMedidas        UnidadesDeMedidas          @relation(fields: [UnidadDeMedidaID], references: [UnidadDeMedidaID], onUpdate: NoAction, map: "FK_Recipientes_UnidadesDeMedidas")
+  BrandsRecipientes        BrandsRecipientes          @relation(fields: [BrandRecipienteID], references: [BrandRecipienteID], onUpdate: NoAction, map: "FK_TiposRecipientes_BrandsRecipientes")
+  TiposRecipientesXLocales TiposRecipientesXLocales[]
+}
+
+model TiposRecipientesXLocales {
+  TipoRecipienteXLocalID Int              @id(map: "PK_TiposRecipientesXLocales") @default(autoincrement())
+  TipoRecipienteID       Int
+  LocalID                Int
+  cantidadEnUso          Int
+  cantidadFueraUso       Int
+  cantidadEnReparacion   Int
+  cantidadDisponible     Int
+  Locales                Locales          @relation(fields: [LocalID], references: [LocalID], onUpdate: NoAction, map: "FK_TiposRecipientesXLocales_Locales")
+  TiposRecipientes       TiposRecipientes @relation(fields: [TipoRecipienteID], references: [TipoRecipienteID], onUpdate: NoAction, map: "FK_TiposRecipientesXLocales_TiposRecipientes")
+}
+
+model TiposResiduos {
+  TipoResiduoID    Int                @id(map: "PK_TiposResiduos") @default(autoincrement())
+  Tipo             String             @db.VarChar(30)
+  Residuos         Residuos[]
+  TiposRecipientes TiposRecipientes[]
+}
+
+model Traducciones {
+  TraduccionID Int          @id(map: "PK_Traducciones") @default(autoincrement())
+  CulturaID    Int          @db.SmallInt
+  Value        String       @db.NVarChar(150)
+  TipoObjetoID Int
+  ReferenceID  BigInt
+  IPAddress    String       @db.VarChar(20)
+  Username     String       @db.VarChar(45)
+  Checksum     Bytes        @db.VarBinary(150)
+  Culturas     Culturas     @relation(fields: [CulturaID], references: [CulturaID], onUpdate: NoAction, map: "FK_Traducciones_Culturas")
+  TiposObjetos TiposObjetos @relation(fields: [TipoObjetoID], references: [TipoObjetoID], onUpdate: NoAction, map: "FK_Traducciones_TiposObjetos")
+}
+
+model Transacciones {
+  TransaccionID                                         BigInt                  @id(map: "PK_Transacciones") @default(autoincrement())
+  OrigenID                                              Int
+  DestinatarioID                                        Int
+  MonedaID                                              Int
+  Monto                                                 Decimal                 @db.Decimal(18, 2)
+  PostTime                                              DateTime
+  IPAddress                                             String                  @db.VarChar(20)
+  Username                                              String                  @db.VarChar(45)
+  Checksum                                              Bytes                   @db.VarBinary(150)
+  PagoDeudaAmbientalID                                  Int?
+  BalancesLogs                                          BalancesLogs[]
+  Monedas                                               Monedas                 @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_Transacciones_Monedas")
+  PagosDeudasAmbientales                                PagosDeudasAmbientales? @relation(fields: [PagoDeudaAmbientalID], references: [PagoDeudaAmbientalID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Transacciones_PagosDeudasAmbientales")
+  Productores_Transacciones_OrigenIDToProductores       Productores             @relation("Transacciones_OrigenIDToProductores", fields: [OrigenID], references: [ProductorID], onUpdate: NoAction, map: "FK_Transacciones_Productores_1")
+  Productores_Transacciones_DestinatarioIDToProductores Productores             @relation("Transacciones_DestinatarioIDToProductores", fields: [DestinatarioID], references: [ProductorID], onUpdate: NoAction, map: "FK_Transacciones_Productores_2")
+}
+
+model Ubicaciones {
+  UbicacionID        Int                      @id(map: "PK_Ubicaciones") @default(autoincrement())
+  PaisID             Int
+  EstadoID           Int
+  CiudadID           Int?
+  Ubicacion          Unsupported("geography")
+  Zipcode            String                   @db.VarChar(12)
+  RegionID           Int
+  Locales            Locales[]
+  LocalesProductores LocalesProductores[]
+  Ciudades           Ciudades?                @relation(fields: [CiudadID], references: [CiudadID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Ubicaciones_Ciudades")
+  Estados            Estados                  @relation(fields: [EstadoID], references: [EstadoID], onUpdate: NoAction, map: "FK_Ubicaciones_Estados")
+  Paises             Paises                   @relation(fields: [PaisID], references: [PaisID], onUpdate: NoAction, map: "FK_Ubicaciones_Paises")
+  Regiones           Regiones                 @relation(fields: [RegionID], references: [RegionID], onUpdate: NoAction, map: "FK_Ubicaciones_Regiones")
+}
+
+model UnidadesDeMedidas {
+  UnidadDeMedidaID                                                             Int                     @id(map: "PK_UnidadesDeMedidas") @default(autoincrement()) @db.SmallInt
+  Unidad                                                                       String                  @db.VarChar(30)
+  ConversionesDeMedidas_ConversionesDeMedidas_PrimeraUnidadToUnidadesDeMedidas ConversionesDeMedidas[] @relation("ConversionesDeMedidas_PrimeraUnidadToUnidadesDeMedidas")
+  ConversionesDeMedidas_ConversionesDeMedidas_SegundaUnidadToUnidadesDeMedidas ConversionesDeMedidas[] @relation("ConversionesDeMedidas_SegundaUnidadToUnidadesDeMedidas")
+  Residuos                                                                     Residuos[]
+  TiposRecipientes                                                             TiposRecipientes[]
+  VolumenesRecoleccion                                                         VolumenesRecoleccion[]
+}
+
+model ValoresContactos {
+  ValorContactoID                BigInt                           @id(map: "PK_ValoresContactos") @default(autoincrement())
+  Valor                          String                           @db.NChar(40)
+  PostTime                       DateTime                         @default(dbgenerated("sysutcdatetime()"), map: "DF_ValoresContactos_PostTime")
+  Enabled                        Boolean                          @default(true, map: "DF_ValoresContactos_Enabled")
+  TipoContactoID                 Int
+  ContactosXEmpresasRecolectoras ContactosXEmpresasRecolectoras[]
+  ContactosXLocales              ContactosXLocales[]
+  ContactosXLocalesProductores   ContactosXLocalesProductores[]
+  ContactosXProductores          ContactosXProductores[]
+  TiposContactos                 TiposContactos                   @relation(fields: [TipoContactoID], references: [TipoContactoID], onUpdate: NoAction, map: "FK_ValoresContactos_TiposContactos")
+
+  @@index([Enabled(sort: Desc)], map: "IX_ValoresContactos")
+}
+
+model Ventas {
+  VentaID            BigInt              @id(map: "PK_Ventas") @default(autoincrement())
+  ProductorID        Int
+  LocalProductorID   BigInt?
+  PostTime           DateTime
+  MontoTotal         Decimal             @db.Decimal(18, 5)
+  MontoPagado        Decimal             @db.Decimal(18, 5)
+  Vuelto             Decimal             @db.Decimal(18, 5)
+  TipoDePagoID       Int                 @db.SmallInt
+  TipoDeCambioID     BigInt
+  MonedaID           Int
+  IPAddress          String              @db.VarChar(20)
+  Username           String              @db.VarChar(45)
+  Checksum           Bytes               @db.VarBinary(150)
+  AperturaCajaID     BigInt
+  ProductosXVentas   ProductosXVentas[]
+  AperturasCajas     AperturasCajas      @relation(fields: [AperturaCajaID], references: [AperturaCajaID], onUpdate: NoAction, map: "FK_Ventas_AperturasCajas")
+  LocalesProductores LocalesProductores? @relation(fields: [LocalProductorID], references: [LocalProductorID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Ventas_LocalesProductores")
+  Monedas            Monedas             @relation(fields: [MonedaID], references: [MonedaID], onUpdate: NoAction, map: "FK_Ventas_Monedas")
+  Productores        Productores         @relation(fields: [ProductorID], references: [ProductorID], onUpdate: NoAction, map: "FK_Ventas_Productores")
+  TiposDeCambio      TiposDeCambio       @relation(fields: [TipoDeCambioID], references: [TipoDeCambioID], onUpdate: NoAction, map: "FK_Ventas_TiposDeCambio")
+  TiposDePagos       TiposDePagos        @relation(fields: [TipoDePagoID], references: [TipoDePagoID], onUpdate: NoAction, map: "FK_Ventas_TiposDePagos")
+}
+
+model VolumenesRecoleccion {
+  VolumenRecoleccionID BigInt              @id(map: "PK_VolumenesRecoleccion") @default(autoincrement())
+  CicloDeRecoleccionID Int
+  InicioVigencia       DateTime            @db.Date
+  FinalVigencia        DateTime            @db.Date
+  Volumen              Decimal             @db.Decimal(18, 5)
+  UnidadDeMedidaID     Int                 @db.SmallInt
+  ResiduoID            Int
+  CiclosDeRecoleccion  CiclosDeRecoleccion @relation(fields: [CicloDeRecoleccionID], references: [CicloDeRecoleccionID], onUpdate: NoAction, map: "FK_VolumenesRecoleccion_CiclosDeRecoleccion")
+  Residuos             Residuos            @relation(fields: [ResiduoID], references: [ResiduoID], onUpdate: NoAction, map: "FK_VolumenesRecoleccion_Residuos")
+  UnidadesDeMedidas    UnidadesDeMedidas   @relation(fields: [UnidadDeMedidaID], references: [UnidadDeMedidaID], onUpdate: NoAction, map: "FK_VolumenesRecoleccion_UnidadesDeMedidas")
+}

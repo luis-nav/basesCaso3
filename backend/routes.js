@@ -1,4 +1,4 @@
-const { single, pool } = require("./controllers");
+const { single, pool, orm } = require("./controllers");
 
 const router = require("express").Router();
 
@@ -7,5 +7,8 @@ router.route("/single/:accion")
 
 router.route("/pool/:accion")
     .get(pool)
+
+router.route("/orm/:accion")
+    .get(orm)
 
 module.exports = router;

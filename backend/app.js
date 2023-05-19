@@ -4,10 +4,15 @@ if (process.env.NODE_ENV !== "production") {
 
 const express = require("express");
 const router = require("./routes");
+const { PrismaClient } = require("@prisma/client")
 
 //App Setup:
 const app = express();
 app.use(express.json());
+
+//Prisma in locals
+app.locals.orm = new PrismaClient()
+
 
 app.use("/api", router);
 
