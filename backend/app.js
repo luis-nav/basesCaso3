@@ -11,6 +11,10 @@ app.use(express.json());
 
 app.use("/api", router);
 
+app.all("*", (req,res) => {
+    res.send("El endpoint no existe")
+})
+
 //App.listen
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

@@ -1,0 +1,59 @@
+{
+  "individualResults": [
+    {
+      "schemaVersion": null,
+      "schemaName": "",
+      "migrations": [
+        {
+          "category": "Versioned",
+          "version": "001.20230508164328",
+          "rawVersion": "001_20230508164328",
+          "description": "",
+          "type": "SQL",
+          "installedOnUTC": "",
+          "state": "Pending",
+          "undoable": "No",
+          "filepath": "C:\\Users\\luisc\\OneDrive\\Documents\\basesI\\Caso3\\repo\\basesCaso3\\flyway\\sql\\V001_20230508164328__.sql",
+          "undoFilepath": "",
+          "installedBy": "",
+          "executionTime": 0
+        },
+        {
+          "category": "Versioned",
+          "version": "002.20230508164419",
+          "rawVersion": "002_20230508164419",
+          "description": "",
+          "type": "SQL",
+          "installedOnUTC": "",
+          "state": "Pending",
+          "undoable": "No",
+          "filepath": "C:\\Users\\luisc\\OneDrive\\Documents\\basesI\\Caso3\\repo\\basesCaso3\\flyway\\sql\\V002_20230508164419__.sql",
+          "undoFilepath": "",
+          "installedBy": "",
+          "executionTime": 0
+        },
+        {
+          "category": "Versioned",
+          "version": "003.20230508164442",
+          "rawVersion": "003_20230508164442",
+          "description": "",
+          "type": "SQL",
+          "installedOnUTC": "",
+          "state": "Pending",
+          "undoable": "No",
+          "filepath": "C:\\Users\\luisc\\OneDrive\\Documents\\basesI\\Caso3\\repo\\basesCaso3\\flyway\\sql\\V003_20230508164442__.sql",
+          "undoFilepath": "",
+          "installedBy": "",
+          "executionTime": 0
+        }
+      ],
+      "flywayVersion": "9.17.0",
+      "database": "",
+      "allSchemasEmpty": true,
+      "timestamp": "2023-05-16T19:53:19.376759100",
+      "operation": "info",
+      "exception": null,
+      "licenseFailed": false
+    }
+  ]
+}

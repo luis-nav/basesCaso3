@@ -1,8 +1,11 @@
-const { prueba } = require("./controllers");
+const { single, pool } = require("./controllers");
 
 const router = require("express").Router();
 
-router.route("/")
-    .get(prueba)
+router.route("/single/:accion")
+    .get(single)
+
+router.route("/pool/:accion")
+    .get(pool)
 
 module.exports = router;
