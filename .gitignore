@@ -1,3 +1,5 @@
 flyway-dev.user.json
 /backend/node_modules
 *.env
+/App/App_Escencial_Verde/target/
+/App_Escencial_Verde/target/

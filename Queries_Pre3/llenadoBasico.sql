@@ -347,3 +347,13 @@ insert into EmpresasRecolectoras values ('Ciudad Limpia', 3)
 insert into ActoresXContrato values (1, 2)
 insert into ActoresXContrato values (2, 1)
 insert into ActoresXContrato values (3, 2)
+
+insert into Locales values (1, NULL, 2)
+
+insert into CiclosDeRecoleccion values ('2023-05-15 07:00:00', 7, 1, 2, 2)
+insert into CiclosDeRecoleccion values ('2023-05-17 07:00:00', 7, 2, 3, 1)
+
+insert into VolumenesRecoleccion values (1, '2023-01-01', '2023-12-31', 500.80, 1, 1)
+insert into VolumenesRecoleccion values (2, '2022-01-01', '2023-12-31', 1000.52, 1, 2)
+insert into VolumenesRecoleccion values (1, '2023-10-01', '2023-12-31', 80.80, 1, 5)
+insert into VolumenesRecoleccion values (2, '2023-06-01', '2023-12-31', 1500.52, 1, 6)
