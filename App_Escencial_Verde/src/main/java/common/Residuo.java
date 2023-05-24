@@ -9,9 +9,10 @@ package common;
  * @author vicky
  */
 public class Residuo {
+    private float Volumen;
     private String Nombre;
-    private int TipoResiduoID;
-    private int UnidadDeMedidaID;
+    private String Tipo;
+    private String Unidad;
 
     public String getNombre() {
         return Nombre;
@@ -21,19 +22,27 @@ public class Residuo {
         this.Nombre = Nombre;
     }
 
-    public int getTipoResiduoID() {
-        return TipoResiduoID;
+    public float getVolumen() {
+        return Volumen;
     }
 
-    public void setTipoResiduoID(int TipoResiduoID) {
-        this.TipoResiduoID = TipoResiduoID;
+    public void setVolumen(float Volumen) {
+        this.Volumen = Volumen;
     }
 
-    public int getUnidadDeMedidaID() {
-        return UnidadDeMedidaID;
+    public String getTipo() {
+        return Tipo;
     }
 
-    public void setUnidadDeMedidaID(int UnidadDeMedidaID) {
-        this.UnidadDeMedidaID = UnidadDeMedidaID;
+    public void setTipo(String Tipo) {
+        this.Tipo = Tipo;
+    }
+
+    public String getUnidad() {
+        return Unidad;
+    }
+
+    public void setUnidad(String Unidad) {
+        this.Unidad = Unidad;
     }
 }

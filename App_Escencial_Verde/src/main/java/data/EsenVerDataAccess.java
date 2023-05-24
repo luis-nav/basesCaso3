@@ -48,8 +48,10 @@ public class EsenVerDataAccess implements IDataConstants {
 		
 		    while (rs.next()) {
 		    	Residuo newResiduo = new Residuo();
-		    	newResiduo.setTipoResiduoID(rs.getInt("VolumenRecoleccionID"));
-                        newResiduo.setUnidadDeMedidaID(rs.getInt("ResiduoID"));
+                        newResiduo.setNombre(rs.getString("Nombre"));
+		    	newResiduo.setVolumen(rs.getInt("Volumen"));
+                        newResiduo.setTipo(rs.getString("Tipo"));
+                        newResiduo.setUnidad(rs.getString("Unidad"));
 		        result.add(newResiduo);
 		    }
 		} catch (Exception ex) {
