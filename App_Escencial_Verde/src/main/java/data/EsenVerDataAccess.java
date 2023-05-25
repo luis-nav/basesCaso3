@@ -44,16 +44,23 @@ public class EsenVerDataAccess implements IDataConstants {
 			spRetornarResiduos.setString(1, NombreProductor);  
                         spRetornarResiduos.setString(2, NombreRegion);
                         spRetornarResiduos.setString(3, Fecha);
-                        ResultSet rs = spRetornarResiduos.executeQuery(); 
-		
-		    while (rs.next()) {
-		    	Residuo newResiduo = new Residuo();
-                        newResiduo.setNombre(rs.getString("Nombre"));
-		    	newResiduo.setVolumen(rs.getInt("Volumen"));
-                        newResiduo.setTipo(rs.getString("Tipo"));
-                        newResiduo.setUnidad(rs.getString("Unidad"));
-		        result.add(newResiduo);
-		    }
+                        Boolean rsB = spRetornarResiduos.execute();
+                        
+                        if (rsB){
+                            ResultSet rs = spRetornarResiduos.executeQuery();
+                            
+                            while (rs.next()) {
+                                Residuo newResiduo = new Residuo();
+                                newResiduo.setNombre(rs.getString("Nombre"));
+                                newResiduo.setVolumen(rs.getInt("Volumen"));
+                                newResiduo.setTipo(rs.getString("Tipo"));
+                                newResiduo.setUnidad(rs.getString("Unidad"));
+                                result.add(newResiduo);
+                            }
+                        }
+                        else{
+                            return null;
+                        }
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

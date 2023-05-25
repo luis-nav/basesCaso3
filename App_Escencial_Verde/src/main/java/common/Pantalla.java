@@ -146,13 +146,16 @@ public class Pantalla extends javax.swing.JFrame {
         String str = "Lista de residuos del productor " + NombreProductor + " en la región " + 
                        NombreRegion + " durante la fecha actual (" + Fecha + ")\n";
         ArrayList<Residuo> Residuos = EsenVerDataAccess.getInstance().getResiduos(NombreProductor, NombreRegion, Fecha);
-		
-        for(Residuo residuo : Residuos) {
-            str+="\n" + residuo.getNombre() + "\nVolumen = " + 
-            residuo.getVolumen() + "\nTipo = " + 
-            residuo.getTipo() + "\nUnidad = " + residuo.getUnidad() + "\n";
-	}
-        
+	if (Residuos == null){
+            str+="\nNo hay recolección de residuos para esta información";
+        }
+        else{
+            for(Residuo residuo : Residuos) {
+                str+="\n" + residuo.getNombre() + "\nVolumen = " + 
+                residuo.getVolumen() + "\nTipo = " + 
+                residuo.getTipo() + "\nUnidad = " + residuo.getUnidad() + "\n";
+            }
+        }
         JOptionPane.showMessageDialog(this, str, "Resultados de la búsqueda", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_btnConsultarActionPerformed
 
