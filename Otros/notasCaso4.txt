@@ -6,3 +6,8 @@ SP with encryption
 
 ========================================================================================
 
+CREATE PROCEDURE [dbo].[EVSP_SelectRecipientesLogs]
+AS
+    SELECT * FROM RecipientesLogs;
+    RETURN
+GO
