@@ -1,0 +1,8 @@
+https://www.mssqltips.com/sqlservertip/7465/encrypt-stored-procedure-sql-server/
+
+Comprobar que un sp esta encriptado y hablar de dbForge
+SP with encryption
+
+
+========================================================================================
+
