@@ -1,5 +1,5 @@
 ## TODOs:
 
-* () Aplicacion Cliente Servidor (Python Vicky)
+* () Aplicacion Cliente Servidor (Java Vicky)
 * () Backend (JS/TS Todd)
 * () Mediciones Postman (...)
