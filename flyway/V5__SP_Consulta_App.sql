@@ -38,14 +38,17 @@ CREATE TYPE CicloEnFecha
 GO
 
 drop type if exists residuosXProductor
-CREATE TYPE residuos
+CREATE TYPE residuosXProductor
    AS TABLE
       (ID int identity(1,1) primary key,
 	  Volumen decimal(18,5),
-	  Unidad varchar(30),
-	  Tipo varchar(30));
+	  Nombre varchar(30),
+	  Tipo varchar(30),
+	  Unidad varchar(30));
 GO
 
+
+ --drop proc SP_RetornarResiduos
 CREATE PROCEDURE [dbo].[SP_RetornarResiduos]
 	@NombreProductor nchar(50),
 	@NombreRegion nchar(40),
@@ -55,33 +58,25 @@ BEGIN
 	
 	SET NOCOUNT ON
 	
-	declare @pID int
-	declare @rID int
-	declare @uID ubicaciones_temp
+	declare @tmp ubicaciones_temp
 	declare @lpID locales_productores
 	declare @Temp int
 	declare @maxID int
 	declare @ubiID int
 	declare @localTemp int
 
-	select @pID = ProductorID from Productores where Nombre = 'KFC'	
-
-	select @rID = RegionID from Regiones where Nombre = 'San Jose Oeste'	
-
-	insert into @uID select UbicacionID from Ubicaciones where RegionID = @rID
+	insert into @tmp select UbicacionID from Ubicaciones as u inner join Regiones as r on u.RegionID = r.RegionID where r.Nombre = @NombreRegion
 
 	set @Temp = 1
-
-	select @maxID = MAX(ID) from @uID
+	select @maxID = MAX(ID) from @tmp
 
 	while (@Temp <= @maxID)
 	begin
-	select @ubiID = UbicacionID from @uID where ID = @Temp
-	insert into @lpID select LocalProductorID from LocalesProductores where ProductorID = @pID and UbicacionID = @ubiID
-	set @Temp = @Temp + 1
+		select @ubiID = UbicacionID from @tmp where ID = @Temp
+		insert into @lpID select LocalProductorID from LocalesProductores as lp inner join Productores as p on lp.ProductorID = p.ProductorID
+		inner join Ubicaciones as u on lp.UbicacionID = u.UbicacionID where lp.UbicacionID = @ubiID and p.Nombre = @NombreProductor
+		set @Temp = @Temp + 1
 	end
-
-	select * from @lpID
 
 	select @maxID = MAX(ID) from @lpID
 	set @Temp = 1
@@ -97,6 +92,8 @@ END
 RETURN 0
 GO
 
+
+ --drop proc SP_RetornarCiclosDeLocal
 CREATE PROCEDURE [dbo].[SP_RetornarCiclosDeLocal]
 	@LocalProductorID  int,
 	@Fecha datetime2(7)
@@ -108,13 +105,14 @@ BEGIN
 	declare @cID ciclos
 
 	insert into @cID select CicloDeRecoleccionID, Inicio from CiclosDeRecoleccion where LocalProductorID = @LocalProductorID
-	-- select * from @cID
 
 	exec SP_ValidarDiaDeRecoleccion @Fecha, @cID
 END
 RETURN 0
 GO
 
+
+ --drop proc SP_ValidarDiaDeRecoleccion
 CREATE PROCEDURE [dbo].[SP_ValidarDiaDeRecoleccion]
 	@Fecha datetime2(7),
 	@cID ciclos readonly
@@ -157,6 +155,8 @@ END
 RETURN 0
 GO
 
+
+ --drop proc SP_RetornarVolumenesXCiclo
 CREATE PROCEDURE [dbo].[SP_RetornarVolumenesXCiclo]
 	@cID int
 AS 
@@ -164,20 +164,25 @@ BEGIN
 	
 	SET NOCOUNT ON
 
-	declare @vID volumenes
+	declare @r residuosXProductor
 	declare @maxID int
 	declare @Temp int
 
-	insert into @vID select VolumenRecoleccionID, Volumen, UnidadDeMedidaID, ResiduoID from VolumenesRecoleccion where CicloDeRecoleccionID = @cID
-	
-	select @maxID = MAX(ID) from @vID
-	set @Temp = 1
+	insert into @r select v.Volumen, r.Nombre, Tipo, Unidad from VolumenesRecoleccion as v inner join Residuos as r on v.ResiduoID = r.ResiduoID
+	inner join TiposResiduos as tr on r.TipoResiduoID = tr.TipoResiduoID
+	inner join UnidadesDeMedidas as um on r.UnidadDeMedidaID = um.UnidadDeMedidaID 
+	where v.CicloDeRecoleccionID = @cID
 
-	while (@Temp <= @maxID)
-	begin
-	insert into 	
-	set @Temp = @Temp + 1
-	end
+	select * from @r
+	
+	--select @maxID = MAX(ID) from @vID
+	--set @Temp = 1
+
+	--while (@Temp <= @maxID)
+	--begin
+	--insert into 	
+	--set @Temp = @Temp + 1
+	--end
 
 END
 RETURN 0
@@ -186,55 +191,4 @@ GO
 
 exec SP_RetornarResiduos 'KFC', 'San Jose Oeste', '2023-05-24'
 
-select * from Productores
-select * from LocalesProductores
-select * from Locales
-select * from Regiones
-select * from Ubicaciones
-select * from CiclosDeRecoleccion
-select * from LocalesProductoresXContratos
-select * from VolumenesRecoleccion
-select * from UnidadesDeMedidas
-select * from Residuos
-select * from TiposResiduos
-
-drop type if exists tablaTemp
-CREATE TYPE tablaTemp
-   AS TABLE
-      (ID int);
-GO
-
-
-declare @tmp2 ubicaciones_temp
-
-insert into @tmp2 select UbicacionID from Ubicaciones as u inner join Regiones as r on u.RegionID = r.RegionID where r.Nombre = 'San Jose Oeste'
-select * from @tmp2
-
-declare @lpID locales_productores
-declare @Temp int
-declare @maxID int
-declare @ubiID int
-set @Temp = 1
-
-	select @maxID = MAX(ID) from @tmp2
-
-	while (@Temp <= @maxID)
-	begin
-	select @ubiID = UbicacionID from @tmp2 where ID = @Temp
-	select LocalProductorID from LocalesProductores as lp inner join Productores as p on lp.ProductorID = p.ProductorID
-inner join Ubicaciones as u on lp.UbicacionID = u.UbicacionID where lp.UbicacionID = 3 and p.Nombre = 'KFC'
-	set @Temp = @Temp + 1
-	end
-
-	select * from @lpID
-
-select LocalProductorID from LocalesProductores as lp inner join Productores as p on lp.ProductorID = p.ProductorID
-inner join Ubicaciones as u on lp.UbicacionID = u.UbicacionID where lp.UbicacionID = 3 and p.Nombre = 'KFC'
-
-
-
 select LocalProductorID from LocalesProductores as lp inner join Ubicaciones as u on lp.UbicacionID = u.UbicacionID where lp.UbicacionID = 3
-select v.Volumen, r.Nombre, r.TipoResiduoID, r.UnidadDeMedidaID from VolumenesRecoleccion as v inner join Residuos as r on v.ResiduoID = r.ResiduoID where r.ResiduoID = 2
-
-select Tipo from Residuos as r inner join TiposResiduos as tr on r.TipoResiduoID = tr.TipoResiduoID where r.TipoResiduoID = 2
-select Unidad from Residuos as r inner join UnidadesDeMedidas as um on r.UnidadDeMedidaID = um.UnidadDeMedidaID where r.UnidadDeMedidaID = 1
