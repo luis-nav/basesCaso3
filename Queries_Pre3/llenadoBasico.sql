@@ -45,7 +45,7 @@ insert into Monedas (Nombre, Acronimo, MonedaBase, Simbolo) values
 SELECT CONVERT(datetime2(7), '2023-12-31 23:59:59');
 
 insert into TiposDeCambio (MonedaID, InicioVigencia, FinalVigencia, [Default], PrecioCambio, IPAddress, Username, Checksum) values
-(1, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 23:59:59'), 1, 532.5, '192.167.0.11', 'Luis', CHECKSUM(1, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 23:59:59'), 1, 532.5, '192.167.0.11', 'Luis'));
+(2, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 23:59:59'), 1, 532.5, '192.167.0.11', 'Luis', CHECKSUM(2, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 23:59:59'), 1, 532.5, '192.167.0.11', 'Luis'));
 
 insert into Paises (Nombre, MonedaID, Acronimo) values ('Costa Rica', 2, 'CR');
 
@@ -357,3 +357,12 @@ insert into VolumenesRecoleccion values (1, '2023-01-01', '2023-12-31', 500.80, 
 insert into VolumenesRecoleccion values (2, '2022-01-01', '2023-12-31', 1000.52, 1, 2)
 insert into VolumenesRecoleccion values (1, '2023-10-01', '2023-12-31', 80.80, 1, 5)
 insert into VolumenesRecoleccion values (2, '2023-06-01', '2023-12-31', 1500.52, 1, 6)
+
+
+-- BALANCES KFC Y MAC
+INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddress, Username, TipoDeCambioID, ProductorID, Cheksum) VALUES 
+(2, 0, 0, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1, CHECkSUM(2, 0, 0, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1)),
+(2, 0, 0, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '127.0.0.1', 'Luis', 1, 2, CHECkSUM(2, 0, 0, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '127.0.0.1', 'Luis', 1, 2));
+
+INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddress, Username, TipoDeCambioID, ProductorID, Cheksum) VALUES 
+(2, 5000000, 5000000, CONVERT(datetime2(7), '2023-02-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1, CHECkSUM(2, 5000000, 5000000, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1));
