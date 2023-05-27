@@ -1,4 +1,6 @@
-CREATE PROCEDURE SP_ActualizarNombres1
+-- Correr primero
+
+CREATE PROCEDURE [dbo].[SP_ActualizarNombres1]
 	@NombreProductor nchar(35),
 	@NewNombreProductor nchar(35),
 	@NombreActor nchar(35),
@@ -8,16 +10,14 @@ BEGIN
 	SET NOCOUNT ON
 	SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
 	BEGIN TRANSACTION
-	
-	BEGIN TRY
-		UPDATE Productores SET Nombre = 'KFC3' WHERE Nombre = 'KFC'
-		WAITFOR DELAY '00:00:10'
-		UPDATE Actores SET Nombre = 'Alejandro3' WHERE Nombre = 'Alejandro'
-		COMMIT
-	END TRY
-	BEGIN CATCH
-			ROLLBACK
-	END CATCH
+
+	UPDATE Actores SET Nombre = @NewNombreActor WHERE Nombre = @NombreActor
+	WAITFOR DELAY '00:00:10'
+	UPDATE Productores SET Nombre = @NewNombreProductor WHERE Nombre = @NombreProductor
+	COMMIT
 END
 RETURN 0
 GO
+
+USE esencialVerde
+EXEC SP_ActualizarNombres1 'KFC', 'KFC2', 'Alejandro', 'Alejandro2'

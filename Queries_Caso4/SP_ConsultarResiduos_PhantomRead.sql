@@ -1,4 +1,5 @@
-CREATE PROCEDURE SP_ConsultarResiduos
+-- Correr primero
+CREATE PROCEDURE [dbo].[SP_ConsultarResiduos]
 AS
 BEGIN
 	SET NOCOUNT ON
@@ -6,9 +7,9 @@ BEGIN
 	BEGIN TRANSACTION
 	
 	BEGIN TRY
-		SELECT * FROM Residuos
+		SELECT * FROM Residuos WHERE TipoResiduoID BETWEEN 1 AND 2
 		WAITFOR DELAY '00:00:10'
-		SELECT * FROM Residuos
+		SELECT * FROM Residuos WHERE TipoResiduoID BETWEEN 1 AND 2
 		COMMIT
 	END TRY
 	BEGIN CATCH
@@ -18,4 +19,5 @@ END
 RETURN 0
 GO
 
+USE esencialVerde
 EXEC SP_ConsultarResiduos

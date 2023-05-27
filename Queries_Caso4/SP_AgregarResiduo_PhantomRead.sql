@@ -1,4 +1,5 @@
-CREATE PROCEDURE SP_AgregarResiduo
+-- Correr segundo
+CREATE PROCEDURE [dbo].[SP_AgregarResiduo]
 	@Nombre varchar(30),
 	@Tipo varchar(30),
 	@Unidad varchar(30)
@@ -8,10 +9,10 @@ BEGIN
 	DECLARE @TipoTempID int
 	DECLARE @UnidadTempID int
 
-	SELECT @TipoTempID = TipoResiduoID FROM TiposResiduos WHERE @Tipo = Tipo
-	SELECT @UnidadTempID = UnidadDeMedidaID FROM UnidadesDeMedidas WHERE @Unidad = Unidad
+	SELECT @TipoTempID = TipoResiduoID FROM TiposResiduos WHERE Tipo = @Tipo
+	SELECT @UnidadTempID = UnidadDeMedidaID FROM UnidadesDeMedidas WHERE Unidad = @Unidad
 
-	SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+	SET TRANSACTION ISOLATION LEVEL READ COMMITTED
 	BEGIN TRANSACTION
 	
 	BEGIN TRY
@@ -25,4 +26,5 @@ END
 RETURN 0
 GO
 
+USE esencialVerde
 EXEC SP_AgregarResiduo 'Gasolina', 'Liquido', 'L'

@@ -1,4 +1,5 @@
-CREATE PROCEDURE SP_ConsultarActores
+-- Correr segundo
+CREATE PROCEDURE [dbo].[SP_ConsultarActores]
 AS
 BEGIN
 	SET NOCOUNT ON
@@ -6,9 +7,9 @@ BEGIN
 	BEGIN TRANSACTION
 	
 	BEGIN TRY
-		SELECT * FROM dbo.Actores
+		SELECT * FROM Actores
 		WAITFOR DELAY '00:00:05'
-		SELECT * FROM dbo.Actores
+		SELECT * FROM Actores
 		COMMIT
 	END TRY
 	BEGIN CATCH
@@ -18,4 +19,5 @@ END
 RETURN 0
 GO 
 
+USE esencialVerde
 EXEC SP_ConsultarActores

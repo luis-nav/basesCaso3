@@ -1,4 +1,5 @@
-CREATE PROCEDURE SP_AgregarProductor
+-- Correr primero
+CREATE PROCEDURE [dbo].[SP_AgregarProductor]
     @NombreProductor nchar(50),
 	@NombreActor nchar(35)
 AS
@@ -15,11 +16,12 @@ BEGIN
 		COMMIT
 	END TRY
 	BEGIN CATCH
-			WAITFOR DELAY '00:00:10'
+			WAITFOR DELAY '00:00:05'
 			ROLLBACK
 	END CATCH
 END
 RETURN 0
 GO
 
+USE esencialVerde
 EXEC SP_AgregarProductor null, 'Eugenio'
