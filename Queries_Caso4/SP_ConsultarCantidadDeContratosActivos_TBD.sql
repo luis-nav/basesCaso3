@@ -1,0 +1,22 @@
+CREATE PROCEDURE SP_ConsultarCantidadDeContratosActivos
+AS
+BEGIN
+	SET NOCOUNT ON
+	DECLARE @ContratosActivos INT
+	SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED
+	BEGIN TRANSACTION
+	
+	BEGIN TRY
+		SELECT @ContratosActivos = COUNT(*) FROM Contratos WHERE DATEDIFF (DAY, GETDATE(), FinalVigencia) > 0
+		UPDATE tblinventory
+		Set ItemsInstock = @ItemsInStock where Id=1
+
+		Print @ItemsInstock
+		COMMIT
+	END TRY
+	BEGIN CATCH
+			ROLLBACK
+	END CATCH	
+END
+RETURN 0
+GO

@@ -6,7 +6,9 @@ BEGIN
 	BEGIN TRANSACTION
 	
 	BEGIN TRY
-		select * from Productores
+		SELECT * FROM dbo.Actores
+		WAITFOR DELAY '00:00:05'
+		SELECT * FROM dbo.Actores
 		COMMIT
 	END TRY
 	BEGIN CATCH
@@ -14,4 +16,6 @@ BEGIN
 	END CATCH	
 END
 RETURN 0
-GO
+GO 
+
+EXEC SP_ConsultarActores

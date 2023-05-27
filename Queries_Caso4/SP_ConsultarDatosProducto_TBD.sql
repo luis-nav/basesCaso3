@@ -7,7 +7,7 @@ BEGIN
 	BEGIN TRANSACTION
 	
 	BEGIN TRY
-		SELECT p.Nombre as NombreProductor, ProductorID, a.Nombre as NombreActor, a.ActorID FROM Productores AS p INNER JOIN Actores AS a ON p.ActorID = a.ActorID WHERE p.Nombre = 'BK'
+		SELECT p.Nombre as NombreProductor, ProductorID, a.Nombre as NombreActor, a.ActorID FROM Productores AS p INNER JOIN Actores AS a ON p.ActorID = a.ActorID WHERE p.Nombre = @NombreProductor
 		COMMIT
 	END TRY
 	BEGIN CATCH

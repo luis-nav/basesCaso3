@@ -1,4 +1,4 @@
-CREATE PROCEDURE SP_ActualizarDatosProductor
+CREATE PROCEDURE SP_AgregarProductor
     @NombreProductor nchar(50),
 	@NombreActor nchar(35)
 AS
@@ -9,15 +9,17 @@ BEGIN
 	BEGIN TRANSACTION
 	
 	BEGIN TRY
-		INSERT INTO Actores VALUES ('PRUEBA')
+		INSERT INTO Actores VALUES (@NombreActor)
 		SET @LastID = @@IDENTITY
-		INSERT INTO Productores VALUES ('PRUEBA', 'P')
+		INSERT INTO Productores VALUES (@LastID, @NombreProductor)
 		COMMIT
 	END TRY
 	BEGIN CATCH
-			WAITFOR DELAY '00:00:15'
+			WAITFOR DELAY '00:00:10'
 			ROLLBACK
 	END CATCH
 END
 RETURN 0
 GO
+
+EXEC SP_AgregarProductor null, 'Eugenio'

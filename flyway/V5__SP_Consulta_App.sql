@@ -17,7 +17,8 @@ CREATE TYPE ciclos
    AS TABLE
       (ID int identity(1,1) primary key,
 	  CicloDeRecoleccionID int,
-	  Inicio datetime2(7));
+	  Inicio datetime2(7),
+	  Frecuencia int);
 GO
 
 drop type if exists volumenes
@@ -104,7 +105,7 @@ BEGIN
 	
 	declare @cID ciclos
 
-	insert into @cID select CicloDeRecoleccionID, Inicio from CiclosDeRecoleccion where LocalProductorID = @LocalProductorID
+	insert into @cID select CicloDeRecoleccionID, Inicio, Frecuencia from CiclosDeRecoleccion where LocalProductorID = @LocalProductorID
 
 	exec SP_ValidarDiaDeRecoleccion @Fecha, @cID
 END
@@ -127,14 +128,15 @@ BEGIN
 	declare @idTemp int
 	declare @ciclosEnFecha CicloEnFecha
 	declare @cicloTemp int
+	declare @frecuenciaTemp int
 
 	select @maxID = MAX(ID) from @cID
 	set @Temp = 1
 
 	while (@Temp <= @maxID)
 	begin
-	select @dateTemp = Inicio, @idTemp = CicloDeRecoleccionID from @cID where ID = @Temp
-	if datediff (day, CONVERT(datetime2(7), @dateTemp), @Fecha)%7 = 0 
+	select @dateTemp = Inicio, @idTemp = CicloDeRecoleccionID, @frecuenciaTemp = Frecuencia from @cID where ID = @Temp
+	if datediff (day, CONVERT(datetime2(7), @dateTemp), @Fecha)%@frecuenciaTemp = 0 
 	insert into @ciclosEnFecha select CicloDeRecoleccionID from @cID where CicloDeRecoleccionID = @idTemp
 	set @Temp = @Temp + 1
 	end
