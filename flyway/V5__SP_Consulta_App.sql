@@ -1,18 +1,18 @@
-drop type if exists ubicaciones_temp
+-- drop type if exists ubicaciones_temp
 CREATE TYPE ubicaciones_temp 
    AS TABLE
       (ID int identity(1,1) primary key,
 	  UbicacionID int);
 GO
 
-drop type if exists locales_productores
+-- drop type if exists locales_productores
 CREATE TYPE locales_productores
    AS TABLE
       (ID int identity(1,1) primary key,
 	  LocalProductorID int);
 GO
 
-drop type if exists ciclos
+-- drop type if exists ciclos
 CREATE TYPE ciclos
    AS TABLE
       (ID int identity(1,1) primary key,
@@ -21,7 +21,7 @@ CREATE TYPE ciclos
 	  Frecuencia int);
 GO
 
-drop type if exists volumenes
+-- drop type if exists volumenes
 CREATE TYPE volumenes
    AS TABLE
       (ID int identity(1,1) primary key,
@@ -31,14 +31,14 @@ CREATE TYPE volumenes
 	  ResiduoID int);
 GO
 
-drop type if exists CicloEnFecha
+-- drop type if exists CicloEnFecha
 CREATE TYPE CicloEnFecha
    AS TABLE
       (ID int identity(1,1) primary key,
 	  CicloDeRecoleccionID int);
 GO
 
-drop type if exists residuosXProductor
+-- drop type if exists residuosXProductor
 CREATE TYPE residuosXProductor
    AS TABLE
       (ID int identity(1,1) primary key,
@@ -176,21 +176,9 @@ BEGIN
 	where v.CicloDeRecoleccionID = @cID
 
 	select * from @r
-	
-	--select @maxID = MAX(ID) from @vID
-	--set @Temp = 1
-
-	--while (@Temp <= @maxID)
-	--begin
-	--insert into 	
-	--set @Temp = @Temp + 1
-	--end
-
 END
 RETURN 0
 GO
 
-
-exec SP_RetornarResiduos 'KFC', 'San Jose Oeste', '2023-05-24'
-
-select LocalProductorID from LocalesProductores as lp inner join Ubicaciones as u on lp.UbicacionID = u.UbicacionID where lp.UbicacionID = 3
+-- use esencialVerde
+-- exec SP_RetornarResiduos 'KFC', 'San Jose Oeste', '2023-05-24'
