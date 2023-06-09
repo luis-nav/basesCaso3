@@ -14,7 +14,7 @@ insert into TiposResiduos (Tipo) values ('Solido');
 
 insert into Residuos (Nombre, TipoResiduoID, UnidadDeMedidaID) values ('Aguas Jabonosas', 1, 1);
 insert into Residuos (Nombre, TipoResiduoID, UnidadDeMedidaID) values ('Aceite Cocina', 2, 1);
-insert into Residuos (Nombre, TipoResiduoID, UnidadDeMedidaID) values 
+insert into Residuos (Nombre, TipoResiduoID, UnidadDeMedidaID) values ('Gasolina', 2, 1),
 ('Papel', 3, 1), ('Aluminio', 3, 1), ('Aceite de Carro', 2, 1), ('Aguas Negras', 1, 1);
 
 insert into TiposRecipientes (TipoResiduoID, Capacidad, UnidadDeMedidaID, BrandRecipienteID) 
@@ -331,10 +331,12 @@ insert into Actores values ('Beatriz')
 insert into Actores values ('Carlos')
 insert into Actores values ('David')
 
-insert into Productores values (1, 'BK')
-insert into Productores values (2, 'Papa')
-insert into Productores values (3, 'Walmart')
-insert into Productores values (4, 'Pali')
+insert into Industrias values ('Alimenticia'), ('Vestimenta'), ('Deportiva')
+
+insert into Productores values (1, 'Forever21', 2)
+insert into Productores values (2, 'Ekono', 2)
+insert into Productores values (3, 'Adidas', 3)
+insert into Productores values (4, 'Nike', 3)
 
 insert into Ciudades values ('San Pedro', 1)
 insert into Ciudades values ('Escazu', 1)
@@ -350,8 +352,8 @@ insert into ActoresXContrato values (3, 2)
 
 insert into Locales values (1, NULL, 2)
 
-insert into CiclosDeRecoleccion values ('2023-05-15 07:00:00', 7, 1, 2, 2)
-insert into CiclosDeRecoleccion values ('2023-05-17 07:00:00', 7, 2, 3, 1)
+insert into CiclosDeRecoleccion values ('2023-05-15 07:00:00', 7, 1, 2, 2, 1)
+insert into CiclosDeRecoleccion values ('2023-05-17 07:00:00', 7, 2, 3, 1, 1)
 
 insert into VolumenesRecoleccion values (1, '2023-01-01', '2023-12-31', 500.80, 1, 1)
 insert into VolumenesRecoleccion values (2, '2022-01-01', '2023-12-31', 1000.52, 1, 2)
@@ -372,14 +374,15 @@ INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddre
 
 --Tablas con llenado automatico:
 
---ProcesosResiduosLogs
---CostosProcesosXPaises
---ProcesosResiduos
---ProductosXVentas
---PreciosProductosXPaises
---AperturasCajas
---Ventas
---Contratos
+--ProcesosResiduosLogs (1)
+--CostosProcesosXPaises (1)
+--ProcesosResiduos (1)
+--PreciosProductosXPaises (2)
+-- Antes -> DBCC CHECKIDENT(Contratos, RESEED, 2)
+--AperturasCajas (3)
+--Ventas (3)
+--Contratos (3)
+--ProductosXVentas (4)
 
 insert into LotesDesechos 
 values (1, 1, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-01-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
@@ -432,3 +435,33 @@ update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 20
 
 update Contratos set InicioVigencia = CONVERT(date, '2022-02-22'), FinalVigencia = CONVERT(date, '2023-02-22'), CostoMensual = 5817239.21400 where ContratoID = 1
 update Contratos set InicioVigencia = CONVERT(date, '2022-05-01'), FinalVigencia = CONVERT(date, '2023-03-14'), CostoMensual = 1417635.3500 where ContratoID = 2
+
+update RecipientesLogs set ContratoID = 1 where RecipienteLogID = 1
+update RecipientesLogs set ContratoID = 33 where RecipienteLogID = 2
+update RecipientesLogs set ContratoID = 5 where RecipienteLogID = 3
+update RecipientesLogs set ContratoID = 10 where RecipienteLogID = 4
+update RecipientesLogs set ContratoID = 14 where RecipienteLogID = 5
+update RecipientesLogs set ContratoID = 28 where RecipienteLogID = 6
+update RecipientesLogs set ContratoID = 48 where RecipienteLogID = 7
+update RecipientesLogs set ContratoID = 27 where RecipienteLogID = 8
+update RecipientesLogs set ContratoID = 32 where RecipienteLogID = 9
+update RecipientesLogs set ContratoID = 6 where RecipienteLogID = 10
+update RecipientesLogs set ContratoID = 11 where RecipienteLogID = 11
+update RecipientesLogs set ContratoID = 43 where RecipienteLogID = 12
+update RecipientesLogs set ContratoID = 50 where RecipienteLogID = 13
+update RecipientesLogs set ContratoID = 12 where RecipienteLogID = 14
+update RecipientesLogs set ContratoID = 41 where RecipienteLogID = 15
+update RecipientesLogs set ContratoID = 35 where RecipienteLogID = 16
+update RecipientesLogs set ContratoID = 13 where RecipienteLogID = 17
+update RecipientesLogs set ContratoID = 7 where RecipienteLogID = 18
+update RecipientesLogs set ContratoID = 2 where RecipienteLogID = 19
+update RecipientesLogs set ContratoID = 6 where RecipienteLogID = 20
+
+update Productores set IndustriaID = 1 where ProductorID = 1
+update Productores set IndustriaID = 1 where ProductorID = 2
+
+update LocalesProductores set ProductorID = 3 where LocalProductorID = 2
+update LocalesProductores set ProductorID = 4 where LocalProductorID = 4
+update LocalesProductores set ProductorID = 6 where LocalProductorID = 5
+update LocalesProductores set ProductorID = 5 where LocalProductorID = 6
+update LocalesProductores set ProductorID = 3 where LocalProductorID = 7

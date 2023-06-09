@@ -3,15 +3,113 @@
   <df:DefaultFontFamily>Segoe UI</df:DefaultFontFamily>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="esenencialVerde">
+    <DataSource Name="esencialVerde">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>jdbc:sqlserver://Victoria-PC;encrypt=true;databaseName=esencialVerde;integratedSecurity=false;user=sa;password=1234;trustServerCertificate=true</ConnectString>
+        <ConnectString>Data Source=Victoria-PC;Initial Catalog=esencialVerde</ConnectString>
       </ConnectionProperties>
-      <rd:SecurityType>None</rd:SecurityType>
+      <rd:SecurityType>DataBase</rd:SecurityType>
       <rd:DataSourceID>be8ddd85-d6ad-43e3-8ad0-2af7fdc27860</rd:DataSourceID>
     </DataSource>
   </DataSources>
+  <DataSets>
+    <DataSet Name="ConsultaIndustrias">
+      <Query>
+        <DataSourceName>esencialVerde</DataSourceName>
+        <QueryParameters>
+          <QueryParameter Name="@RegionOPais">
+            <Value>=Parameters!RegionOPais.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@Lugar">
+            <Value>=Parameters!Lugar.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@FechaInicial">
+            <Value>=Parameters!FechaInicial.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@FechaFinal">
+            <Value>=Parameters!FechaFinal.Value</Value>
+          </QueryParameter>
+        </QueryParameters>
+        <CommandText>IF @RegionOPais = 'Pais'
+SELECT  TOP 5 P.Nombre as Lugar, Ind.Industria as Industria, tr.Tipo as TipoResiduo, PrecProduXPais.Precio, Con.CostoMensual, PrecProduXPais.Precio - Con.CostoMensual as Diferencia
+FROM
+LocalesProductores LocProd
+INNER JOIN Productores Prod on LocProd.ProductorID = Prod.ProductorID
+INNER JOIN Ubicaciones Ubi on LocProd.UbicacionID = Ubi.UbicacionID
+INNER JOIN Regiones Regi on Ubi.RegionID = Regi.RegionID
+INNER JOIN Locales Loc on Loc.RegionID = Regi.RegionID
+INNER JOIN RecipientesLogs RecLog on Loc.LocalID = RecLog.LocalID
+INNER JOIN TiposRecipientes TipRec on RecLog.TipoRecipienteID = TipRec.TipoRecipienteID
+INNER JOIN LotesDesechos LotDes on RecLog.LoteDesechoID = LotDes.LoteDesechoID
+INNER JOIN ProcesosResiduosLogs ProcResLog on ProcResLog.LoteDesechoID = LotDes.LoteDesechoID
+INNER JOIN CostosProcesosXPaises CostProc on ProcResLog.CostoProcesoXPaisID = CostProc.CostoProcesoXPaisID
+INNER JOIN Residuos Res on RecLog.ResiduoID = Res.ResiduoID
+INNER JOIN TiposResiduos as tr on res.TipoResiduoID = tr.TipoResiduoID
+INNER JOIN UnidadesDeMedidas as um on res.UnidadDeMedidaID = um.UnidadDeMedidaID
+INNER JOIN ProcesosResiduos ProcRes on Res.ResiduoID = ProcRes.ResiduoID
+INNER JOIN Productos Produ on Produ.ProcesoResiduoID = ProcRes.ProcesoResiduoID
+INNER JOIN ProductosXVentas ProduXVent on ProduXVent.ProductoID = Produ.ProductoID
+INNER JOIN PreciosProductosXPaises PrecProduXPais on ProduXVent.PrecioProductoID = PrecProduXPais.PrecioProductoXPaisID
+INNER JOIN Monedas on Monedas.MonedaID = PrecProduXPais.MonedaID
+INNER JOIN Contratos as Con on Con.ContratoID = RecLog.ContratoID
+INNER JOIN Industrias as Ind on Ind.IndustriaID = Prod.IndustriaID
+INNER JOIN Paises as P on P.PaisID = Ubi.PaisID
+WHERE P.Nombre = @Lugar AND RecLog.Hora BETWEEN @FechaInicial AND @FechaFinal
+ELSE
+SELECT TOP 5 Regi.Nombre as Lugar, Ind.Industria as Industria, tr.Tipo as TipoResiduo, PrecProduXPais.Precio, Con.CostoMensual, PrecProduXPais.Precio - Con.CostoMensual as Diferencia
+FROM
+LocalesProductores LocProd
+INNER JOIN Productores Prod on LocProd.ProductorID = Prod.ProductorID
+INNER JOIN Ubicaciones Ubi on LocProd.UbicacionID = Ubi.UbicacionID
+INNER JOIN Regiones Regi on Ubi.RegionID = Regi.RegionID
+INNER JOIN Locales Loc on Loc.RegionID = Regi.RegionID
+INNER JOIN RecipientesLogs RecLog on Loc.LocalID = RecLog.LocalID
+INNER JOIN TiposRecipientes TipRec on RecLog.TipoRecipienteID = TipRec.TipoRecipienteID
+INNER JOIN LotesDesechos LotDes on RecLog.LoteDesechoID = LotDes.LoteDesechoID
+INNER JOIN ProcesosResiduosLogs ProcResLog on ProcResLog.LoteDesechoID = LotDes.LoteDesechoID
+INNER JOIN CostosProcesosXPaises CostProc on ProcResLog.CostoProcesoXPaisID = CostProc.CostoProcesoXPaisID
+INNER JOIN Residuos Res on RecLog.ResiduoID = Res.ResiduoID
+INNER JOIN TiposResiduos as tr on res.TipoResiduoID = tr.TipoResiduoID
+INNER JOIN UnidadesDeMedidas as um on res.UnidadDeMedidaID = um.UnidadDeMedidaID
+INNER JOIN ProcesosResiduos ProcRes on Res.ResiduoID = ProcRes.ResiduoID
+INNER JOIN Productos Produ on Produ.ProcesoResiduoID = ProcRes.ProcesoResiduoID
+INNER JOIN ProductosXVentas ProduXVent on ProduXVent.ProductoID = Produ.ProductoID
+INNER JOIN PreciosProductosXPaises PrecProduXPais on ProduXVent.PrecioProductoID = PrecProduXPais.PrecioProductoXPaisID
+INNER JOIN Monedas on Monedas.MonedaID = PrecProduXPais.MonedaID
+INNER JOIN Contratos as Con on Con.ContratoID = RecLog.ContratoID
+INNER JOIN Industrias as Ind on Ind.IndustriaID = Prod.IndustriaID
+INNER JOIN Paises as P on P.PaisID = Ubi.PaisID
+WHERE Regi.Nombre = @Lugar AND RecLog.Hora BETWEEN @FechaInicial AND @FechaFinal
+ORDER BY Diferencia DESC</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="Lugar">
+          <DataField>Lugar</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Industria">
+          <DataField>Industria</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="TipoResiduo">
+          <DataField>TipoResiduo</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="Precio">
+          <DataField>Precio</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="CostoMensual">
+          <DataField>CostoMensual</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Diferencia">
+          <DataField>Diferencia</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
   <ReportSections>
     <ReportSection>
       <Body>
@@ -78,11 +176,451 @@
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Tablix Name="Tablix3">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox19">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Lugar</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox19</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox21">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Industria</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox21</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox23">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Tipo Residuo</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox23</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox25">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Precio</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox25</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox27">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Costo Mensual</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox27</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                        <rd:Selected>true</rd:Selected>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox29">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Diferencia</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox29</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Lugar">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Lugar.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Lugar</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Industria">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Industria.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Industria</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="TipoResiduo">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!TipoResiduo.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>TipoResiduo</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Precio">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Precio.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Precio</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="CostoMensual">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!CostoMensual.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>CostoMensual</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Diferencia">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Diferencia.Value</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Diferencia</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>ConsultaIndustrias</DataSetName>
+            <Top>1.22444in</Top>
+            <Left>0.51389in</Left>
+            <Height>0.5in</Height>
+            <Width>6in</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
         </ReportItems>
         <Height>2in</Height>
         <Style />
       </Body>
-      <Width>6.5in</Width>
+      <Width>6.51389in</Width>
       <Page>
         <LeftMargin>1in</LeftMargin>
         <RightMargin>1in</RightMargin>
@@ -92,10 +630,72 @@
       </Page>
     </ReportSection>
   </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="RegionOPais">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>'Pais'</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Region o pais:</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>Pais</Value>
+            <Label>Pais</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>Region</Value>
+            <Label>Region</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="Lugar">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Costa Rica</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Lugar:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="FechaInicial">
+      <DataType>DateTime</DataType>
+      <Prompt>Fecha Inicial:</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="FechaFinal">
+      <DataType>DateTime</DataType>
+      <Prompt>Fecha Final:</Prompt>
+    </ReportParameter>
+  </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>4</NumberOfColumns>
       <NumberOfRows>2</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>RegionOPais</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>Lugar</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>FechaInicial</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>FechaFinal</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
     </GridLayoutDefinition>
   </ReportParametersLayout>
   <rd:ReportUnitType>Inch</rd:ReportUnitType>
