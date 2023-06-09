@@ -3,3 +3,5 @@ flyway-dev.user.json
 *.env
 /App/App_Escencial_Verde/target/
 /App_Escencial_Verde/target/
+/flyway/flyway.conf
+/flyway/flyway-dev.user.json
