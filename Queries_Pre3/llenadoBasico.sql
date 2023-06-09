@@ -366,3 +366,69 @@ INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddre
 
 INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddress, Username, TipoDeCambioID, ProductorID, Cheksum) VALUES 
 (2, 5000000, 5000000, CONVERT(datetime2(7), '2023-02-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1, CHECkSUM(2, 5000000, 5000000, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1));
+
+
+-- Llenado para reporting
+
+--Tablas con llenado automatico:
+
+--ProcesosResiduosLogs
+--CostosProcesosXPaises
+--ProcesosResiduos
+--ProductosXVentas
+--PreciosProductosXPaises
+--AperturasCajas
+--Ventas
+--Contratos
+
+insert into LotesDesechos 
+values (1, 1, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-01-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
+insert into LotesDesechos 
+values (2, 5, CONVERT(datetime2(7), '2023-02-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-02-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
+insert into LotesDesechos 
+values (3, 7, CONVERT(datetime2(7), '2023-03-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-03-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
+insert into LotesDesechos 
+values (1, 2, CONVERT(datetime2(7), '2023-04-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-04-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
+insert into LotesDesechos 
+values (2, 3, CONVERT(datetime2(7), '2023-05-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-05-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
+insert into LotesDesechos 
+values (3, 4, CONVERT(datetime2(7), '2023-06-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-06-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
+insert into LotesDesechos 
+values (1, 6, CONVERT(datetime2(7), '2023-07-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-07-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
+
+insert into Productos values ('Colador', 'Utencilio de cocina', 1, 1)
+insert into Productos values ('Lapiz', 'Utencilio de oficina', 1, 5)
+insert into Productos values ('Bolsa', 'Utencilio para mover cosas', 1, 3)
+insert into Productos values ('Borrador', 'Utencilio de oficina', 1, 7)
+insert into Productos values ('Libro', 'Utencilio de oficina', 1, 2)
+insert into Productos values ('Cobija', 'Utencilio domestico', 1, 6)
+insert into Productos values ('Regla', 'Utencilio de oficina', 1, 22)
+insert into Productos values ('Folder', 'Utencilio de oficina', 1, 79)
+insert into Productos values ('Toalla', 'Utencilio domestico', 1, 8)
+insert into Productos values ('Maceta', 'Utencilio domestico', 1, 14)
+
+insert into TiposDePagos values ('Efectivo'), ('Tarjeta'), ('Sinpe'), ('Transferencia')
+
+update RecipientesLogs set LoteDesechoID = 1 where RecipienteLogID = 1
+update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 2
+update RecipientesLogs set LoteDesechoID = 5 where RecipienteLogID = 3
+update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 4
+update RecipientesLogs set LoteDesechoID = 4 where RecipienteLogID = 5
+update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 6
+update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 7
+update RecipientesLogs set LoteDesechoID = 7 where RecipienteLogID = 8
+update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 9
+update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 10
+update RecipientesLogs set LoteDesechoID = 1 where RecipienteLogID = 11
+update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 12
+update RecipientesLogs set LoteDesechoID = 5 where RecipienteLogID = 13
+update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 14
+update RecipientesLogs set LoteDesechoID = 4 where RecipienteLogID = 15
+update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 16
+update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 17
+update RecipientesLogs set LoteDesechoID = 7 where RecipienteLogID = 18
+update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 19
+update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 20
+
+update Contratos set InicioVigencia = CONVERT(date, '2022-02-22'), FinalVigencia = CONVERT(date, '2023-02-22'), CostoMensual = 5817239.21400 where ContratoID = 1
+update Contratos set InicioVigencia = CONVERT(date, '2022-05-01'), FinalVigencia = CONVERT(date, '2023-03-14'), CostoMensual = 1417635.3500 where ContratoID = 2
