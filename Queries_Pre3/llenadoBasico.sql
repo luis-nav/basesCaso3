@@ -370,6 +370,57 @@ INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddre
 (2, 5000000, 5000000, CONVERT(datetime2(7), '2023-02-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1, CHECkSUM(2, 5000000, 5000000, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '127.0.0.1', 'Luis', 1, 1));
 
 
+
+-- LLENADO NUEVO
+
+--UPDATE Ubicaciones SET CiudadID = 2 WHERE UbicacionID > 0;
+--UPDATE Ubicaciones SET CiudadID = 1 WHERE UbicacionID = 3 or UbicacionID > 6;
+--INSERT INTO RecipientesLogs (Hora, TipoRecipienteID, IPAddress, Username, Checksum, LocalID, AccionRecipienteID, CantidadRecipientes, ResiduoID, CamionID, ContratoID)
+--SELECT DATEADD(MINUTE, 30, Hora),TipoRecipienteID, IPAddress, Username, Checksum, LocalID, 5, CantidadRecipientes, ResiduoID, CamionID, ContratoID FROM RecipientesLogs
+--INSERT INTO AccionesRecipientes (Descripcion) VALUES ('Entregar a Recolector');
+--INSERT INTO Contratos (InicioVigencia, FinalVigencia, EmpresaRecolectoraID, CostoMensual, MonedaID, TipoDeCambioID)
+--VALUES (CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 2, 40000, 1, 1);
+--INSERT INTO RecipientesLogs (Hora, TipoRecipienteID, IPAddress, Username, Checksum, LocalID, AccionRecipienteID, CantidadRecipientes, ResiduoID, CamionID, ContratoID)
+--SELECT Hora,TipoRecipienteID, IPAddress, Username, Checksum, LocalID, 5, FLOOR(CantidadRecipientes/1.5), ResiduoID, CamionID, 3 
+--FROM RecipientesLogs
+--WHERE AccionRecipienteID = 5 AND ContratoID = 1;
+--DELETE FROM RecipientesLogs WHERE AccionRecipienteID = 5 AND CantidadRecipientes > 200;
+
+
+
+
+INSERT INTO LotesDesechos (HoraApertura, LocalID, ResiduoID, Checksum, Username, IPAddress)
+SELECT DISTINCT Hora, LocalID, ResiduoID, Checksum, Username, IPAddress FROM RecipientesLogs
+WHERE AccionRecipienteID = 5;
+
+DELETE FROM ProcesosResiduos WHERE ProcesoResiduoID > 0;
+DBCC CHECKIDENT(ProcesosResiduos, RESEED, 0);
+
+INSERT INTO ProcesosResiduos (ResiduoID,DesechoReciclable,Nombre)
+SELECT ResiduoID, 0, 'a' FROM Residuos;
+
+DELETE FROM CostosProcesosXPaises WHERE CostoProcesoXPaisID > 0;
+DBCC CHECKIDENT(CostosProcesosXPaises, RESEED, 0);
+
+INSERT INTO CostosProcesosXPaises (Tarifa, PaisID, MonedaID, InicioVigencia, FinalVigencia, [Default], IPAddress, Username, CHECKSUM, ProcesoResiduoID)
+SELECT 3000*((ProcesoResiduoID%2)+1), 1, 1, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 00:00:01'), 1, '192.167.0.11', 'Luis', CHECKSUM('192.167.0.11', 'Luis'), ProcesoResiduoID FROM ProcesosResiduos;
+
+DELETE FROM ProcesosResiduosLogs WHERE ProcesoResiduoLogID > 0;
+DBCC CHECKIDENT(ProcesosResiduosLogs, RESEED, 0);
+
+INSERT INTO ProcesosResiduosLogs (Hora, LocalID, CostoProcesoXPaisID, ResiduoID, Username, IPAddress, Checksum, LoteDesechoID)
+SELECT HoraApertura, LocalID, ResiduoID, ResiduoID, Username, IPAddress, Checksum, LoteDesechoID 
+FROM LotesDesechos;
+
+
+
+
+
+
+
+
+
+
 -- Llenado para reporting
 
 --Tablas con llenado automatico:
