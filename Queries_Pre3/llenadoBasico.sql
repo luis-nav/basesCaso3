@@ -424,3 +424,10 @@ INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVig
 SELECT 3, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
 INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
 SELECT 4, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
+
+UPDATE Productores SET IndustriaID = 1 WHERE ProductorID < 3
+UPDATE Productores SET IndustriaID = 3 WHERE ProductorID = 2
+UPDATE CostosProcesosXPaises SET Tarifa = 350 WHERE CostoProcesoXPaisID%2 = 0
+UPDATE CostosProcesosXPaises SET Tarifa = 300 WHERE CostoProcesoXPaisID%2 = 1
+UPDATE Contratos SET CostoMensual = 550000 WHERE ContratoID = 1
+UPDATE Contratos SET CostoMensual = 700000 WHERE ContratoID = 2

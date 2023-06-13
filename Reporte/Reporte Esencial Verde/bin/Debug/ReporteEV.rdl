@@ -54,8 +54,8 @@ TipRes.Tipo as TipoResiduo,
 CostoProc.Tarifa *
 COUNT(ProcResLogs.ProcesoResiduoLogID) as Costo,
 
-(Cont.CostoMensual * DATEDIFF(MONTH, @FechaInicial, @FechaFinal)) /
-(SELECT NumeroDeTiposResiduos FROM TiposResiduosPorContrato WHERE ContratoID = Cont.ContratoID) 
+(Cont.CostoMensual * DATEDIFF(MONTH, @FechaInicial, @FechaFinal) /
+(SELECT NumeroDeTiposResiduos FROM TiposResiduosPorContrato WHERE ContratoID = Cont.ContratoID)) 
 as Cobrado
 FROM
 Paises P
@@ -69,7 +69,7 @@ INNER JOIN Locales Locs on Reg.RegionID = Locs.RegionID
 INNER JOIN ProcesosResiduosLogs ProcResLogs on Locs.LocalID = ProcResLogs.LocalID
 LEFT JOIN Residuos Res on ProcResLogs.ResiduoID = Res.ResiduoID
 LEFT JOIN TiposResiduos TipRes on Res.TipoResiduoID = TipRes.TipoResiduoID
-INNER JOIN ProcesosResiduos ProcRes on ProcRes.ResiduoID = Res.ResiduoID 
+LEFT JOIN ProcesosResiduos ProcRes on ProcRes.ResiduoID = Res.ResiduoID 
 LEFT JOIN CostosProcesosXPaises CostoProc on CostoProc.ProcesoResiduoID = ProcRes.ProcesoResiduoID and P.PaisID = CostoProc.PaisID
 WHERE P.Nombre = @Lugar and (Cont.InicioVigencia &lt;= @FechaInicial or Cont.FinalVigencia &gt;= @FechaFinal)
 and ProcResLogs.Hora BETWEEN @FechaInicial AND @FechaFinal
@@ -89,9 +89,9 @@ SELECT
 DatosAgrupados.Lugar, 
 DatosAgrupados.Industria, 
 DatosAgrupados.TipoResiduo,
-DatosAgrupados.Costo,
-DatosAgrupados.Cobrado,
-DatosAgrupados.Cobrado - DatosAgrupados.Costo as Diferencia
+ROUND(CAST(DatosAgrupados.Costo AS FLOAT), 2) as Costo,
+ROUND(CAST(DatosAgrupados.Cobrado AS FLOAT), 2) as Cobrado,
+ROUND(CAST(DatosAgrupados.Cobrado - DatosAgrupados.Costo AS FLOAT), 2) as Diferencia
 FROM DatosAgrupados;
 
 
@@ -115,7 +115,7 @@ TipRes.Tipo as TipoResiduo,
 CostoProc.Tarifa *
 COUNT(ProcResLogs.ProcesoResiduoLogID) as Costo,
 
-(Cont.CostoMensual * DATEDIFF(MONTH, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 00:00:01')) /
+(Cont.CostoMensual * DATEDIFF(MONTH, @FechaInicial, @FechaFinal) /
 (SELECT NumeroDeTiposResiduos FROM TiposResiduosPorContrato WHERE ContratoID = Cont.ContratoID)) 
 as Cobrado
 FROM
@@ -150,9 +150,9 @@ SELECT
 DatosAgrupados.Lugar, 
 DatosAgrupados.Industria, 
 DatosAgrupados.TipoResiduo,
-DatosAgrupados.Costo,
-DatosAgrupados.Cobrado,
-DatosAgrupados.Cobrado - DatosAgrupados.Costo as Diferencia
+ROUND(CAST(DatosAgrupados.Costo AS FLOAT), 2) as Costo,
+ROUND(CAST(DatosAgrupados.Cobrado AS FLOAT), 2) as Cobrado,
+ROUND(CAST(DatosAgrupados.Cobrado - DatosAgrupados.Costo AS FLOAT), 2) as Diferencia
 FROM DatosAgrupados;</CommandText>
       </Query>
       <Fields>
@@ -170,15 +170,15 @@ FROM DatosAgrupados;</CommandText>
         </Field>
         <Field Name="Costo">
           <DataField>Costo</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
         <Field Name="Cobrado">
           <DataField>Cobrado</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
         <Field Name="Diferencia">
           <DataField>Diferencia</DataField>
-          <rd:TypeName>System.Decimal</rd:TypeName>
+          <rd:TypeName>System.Double</rd:TypeName>
         </Field>
       </Fields>
     </DataSet>
@@ -274,13 +274,10 @@ FROM DatosAgrupados;</CommandText>
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>0.87731in</Width>
+                  <Width>1.21759in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>0.68287in</Width>
-                </TablixColumn>
-                <TablixColumn>
-                  <Width>0.97454in</Width>
+                  <Width>0.91204in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -296,36 +293,6 @@ FROM DatosAgrupados;</CommandText>
                 <TablixRow>
                   <Height>0.22222in</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox25">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Industria</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox25</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox27">
@@ -489,36 +456,6 @@ FROM DatosAgrupados;</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Industria">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>=Fields!Industria.Value</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Industria</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="Lugar">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -680,38 +617,6 @@ FROM DatosAgrupados;</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox47">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Subtotal:</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox47</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
                         <Textbox Name="Textbox48">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
@@ -719,7 +624,7 @@ FROM DatosAgrupados;</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value />
+                                  <Value>Subtotal:</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                   </Style>
@@ -804,6 +709,7 @@ FROM DatosAgrupados;</CommandText>
                             <PaddingBottom>2pt</PaddingBottom>
                           </Style>
                         </Textbox>
+                        <rd:Selected>true</rd:Selected>
                       </CellContents>
                     </TablixCell>
                     <TablixCell>
@@ -875,38 +781,6 @@ FROM DatosAgrupados;</CommandText>
                 <TablixRow>
                   <Height>0.25in</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox37">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox37</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox38">
@@ -1078,14 +952,13 @@ FROM DatosAgrupados;</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
-                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
               <TablixMembers>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>1in</Size>
+                    <Size>0.88194in</Size>
                     <CellContents>
                       <Textbox Name="Textbox43">
                         <CanGrow>true</CanGrow>
@@ -1134,7 +1007,7 @@ FROM DatosAgrupados;</CommandText>
                     </SortExpression>
                   </SortExpressions>
                   <TablixHeader>
-                    <Size>1in</Size>
+                    <Size>0.88194in</Size>
                     <CellContents>
                       <Textbox Name="Industria1">
                         <CanGrow>true</CanGrow>
@@ -1177,7 +1050,7 @@ FROM DatosAgrupados;</CommandText>
                 </TablixMember>
                 <TablixMember>
                   <TablixHeader>
-                    <Size>1in</Size>
+                    <Size>0.88194in</Size>
                     <CellContents>
                       <Textbox Name="Textbox45">
                         <CanGrow>true</CanGrow>
@@ -1220,7 +1093,7 @@ FROM DatosAgrupados;</CommandText>
             <Top>1.53in</Top>
             <Left>0.33333in</Left>
             <Height>0.94444in</Height>
-            <Width>6.53472in</Width>
+            <Width>6.01157in</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border>
