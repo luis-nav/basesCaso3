@@ -67,7 +67,8 @@ DatosAgrupados.TipoResiduo,
 ROUND(CAST(DatosAgrupados.Costo AS FLOAT), 2) as Costo,
 ROUND(CAST(DatosAgrupados.Cobrado AS FLOAT), 2) as Cobrado,
 ROUND(CAST(DatosAgrupados.Cobrado - DatosAgrupados.Costo AS FLOAT), 2) as Diferencia
-FROM DatosAgrupados;
+FROM DatosAgrupados
+ORDER BY DatosAgrupados.Lugar ASC, DatosAgrupados.Industria ASC, DatosAgrupados.TipoResiduo ASC, Diferencia DESC;
 
 
 ELSE
@@ -128,4 +129,5 @@ DatosAgrupados.TipoResiduo,
 ROUND(CAST(DatosAgrupados.Costo AS FLOAT), 2) as Costo,
 ROUND(CAST(DatosAgrupados.Cobrado AS FLOAT), 2) as Cobrado,
 ROUND(CAST(DatosAgrupados.Cobrado - DatosAgrupados.Costo AS FLOAT), 2) as Diferencia
-FROM DatosAgrupados;
+FROM DatosAgrupados
+ORDER BY DatosAgrupados.Lugar ASC, DatosAgrupados.Industria ASC, DatosAgrupados.TipoResiduo ASC, Diferencia DESC;
