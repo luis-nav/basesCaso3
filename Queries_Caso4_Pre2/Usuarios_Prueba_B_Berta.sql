@@ -1,5 +1,5 @@
 -- berta
 USE esencialVerde
-SELECT * FROM Actores
+SELECT ActorID, Nombre FROM Actores -- restriccion
 SELECT Nombre FROM Actores
-SELECT ActorID FROM Actores
+SELECT ActorID FROM Actores -- restriccion
