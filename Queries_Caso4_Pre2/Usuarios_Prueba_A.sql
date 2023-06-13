@@ -1,4 +1,4 @@
 -- alan
 USE esencialVerde
-SELECT * FROM Residuos
-EXEC SP_ConsultarResiduos
+SELECT RecipienteLogID, Hora, TipoRecipienteID FROM RecipientesLogs -- restriccion
+EXEC EVSP_SelectRecipientesLogs

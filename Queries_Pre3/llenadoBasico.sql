@@ -352,13 +352,33 @@ insert into ActoresXContrato values (3, 2)
 
 insert into Locales values (1, NULL, 2)
 
-insert into CiclosDeRecoleccion values ('2023-05-15 07:00:00', 7, 1, 2, 2, 1)
-insert into CiclosDeRecoleccion values ('2023-05-17 07:00:00', 7, 2, 3, 1, 1)
+-- TODAS FECHAS 
+-- INICIO: CONVERT(datetime2(7), '2023-01-01 00:00:01')
+-- FIN: CONVERT(datetime2(7), '2023-12-31 00:00:01')
+--INSERTAR 4 CICLOS DE RECOLECCION CON LocalProductorXContratoID =1, =2, =3, =4
+-- CADA CICLO 
 
-insert into VolumenesRecoleccion values (1, '2023-01-01', '2023-12-31', 500.80, 1, 1)
-insert into VolumenesRecoleccion values (2, '2022-01-01', '2023-12-31', 1000.52, 1, 2)
-insert into VolumenesRecoleccion values (1, '2023-10-01', '2023-12-31', 80.80, 1, 5)
-insert into VolumenesRecoleccion values (2, '2023-06-01', '2023-12-31', 1500.52, 1, 6)
+-- insert into CiclosDeRecoleccion values ('2023-05-15 07:00:00', 7, 1, 2, 2, 1)
+-- insert into CiclosDeRecoleccion values ('2023-05-17 07:00:00', 7, 2, 3, 1, 1)
+select * from CiclosDeRecoleccion
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 1, null, 1, null)
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 2, null, 2, null)
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 3, null, 3, null)
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 4, null, 4, null)
+
+-- insert into VolumenesRecoleccion values (1, '2023-01-01', '2023-12-31', 500.80, 1, 1)
+-- insert into VolumenesRecoleccion values (2, '2022-01-01', '2023-12-31', 1000.52, 1, 2)
+-- insert into VolumenesRecoleccion values (1, '2023-10-01', '2023-12-31', 80.80, 1, 5)
+-- insert into VolumenesRecoleccion values (2, '2023-06-01', '2023-12-31', 1500.52, 1, 6)
+select * from VolumenesRecoleccion
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 1, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 2, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 3, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 4, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
 
 
 -- BALANCES KFC Y MAC
