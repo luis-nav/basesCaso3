@@ -64,10 +64,11 @@ SELECT
 DatosAgrupados.Lugar, 
 DatosAgrupados.Industria, 
 DatosAgrupados.TipoResiduo,
-ROUND(CAST(DatosAgrupados.Costo AS FLOAT), 2) as Costo,
-ROUND(CAST(DatosAgrupados.Cobrado AS FLOAT), 2) as Cobrado,
-ROUND(CAST(DatosAgrupados.Cobrado - DatosAgrupados.Costo AS FLOAT), 2) as Diferencia
-FROM DatosAgrupados;
+ROUND(CAST(SUM(DatosAgrupados.Costo) AS FLOAT), 2) as Costo,
+ROUND(CAST(SUM(DatosAgrupados.Cobrado) AS FLOAT), 2) as Cobrado,
+ROUND(CAST(SUM(DatosAgrupados.Cobrado) - SUM(DatosAgrupados.Costo) AS FLOAT), 2) as Diferencia
+FROM DatosAgrupados
+GROUP BY DatosAgrupados.Lugar, DatosAgrupados.Industria , DatosAgrupados.TipoResiduo;
 
 
 ELSE
@@ -125,7 +126,8 @@ SELECT
 DatosAgrupados.Lugar, 
 DatosAgrupados.Industria, 
 DatosAgrupados.TipoResiduo,
-ROUND(CAST(DatosAgrupados.Costo AS FLOAT), 2) as Costo,
-ROUND(CAST(DatosAgrupados.Cobrado AS FLOAT), 2) as Cobrado,
-ROUND(CAST(DatosAgrupados.Cobrado - DatosAgrupados.Costo AS FLOAT), 2) as Diferencia
-FROM DatosAgrupados;
+ROUND(CAST(SUM(DatosAgrupados.Costo) AS FLOAT), 2) as Costo,
+ROUND(CAST(SUM(DatosAgrupados.Cobrado) AS FLOAT), 2) as Cobrado,
+ROUND(CAST(SUM(DatosAgrupados.Cobrado) - SUM(DatosAgrupados.Costo) AS FLOAT), 2) as Diferencia
+FROM DatosAgrupados
+GROUP BY DatosAgrupados.Lugar, DatosAgrupados.Industria , DatosAgrupados.TipoResiduo;
