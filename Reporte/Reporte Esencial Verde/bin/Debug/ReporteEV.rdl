@@ -19,68 +19,141 @@
         <QueryParameters>
           <QueryParameter Name="@RegionOPais">
             <Value>=Parameters!RegionOPais.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
           <QueryParameter Name="@Lugar">
             <Value>=Parameters!Lugar.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
           <QueryParameter Name="@FechaInicial">
             <Value>=Parameters!FechaInicial.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
           <QueryParameter Name="@FechaFinal">
             <Value>=Parameters!FechaFinal.Value</Value>
+            <rd:UserDefined>true</rd:UserDefined>
           </QueryParameter>
         </QueryParameters>
         <CommandText>IF @RegionOPais = 'Pais'
-SELECT  TOP 5 P.Nombre as Lugar, Ind.Industria as Industria, tr.Tipo as TipoResiduo, PrecProduXPais.Precio, Con.CostoMensual, PrecProduXPais.Precio - Con.CostoMensual as Diferencia
+WITH TiposResiduosPorContrato AS (
+SELECT Cont.ContratoID, COUNT(DISTINCT TipRes.Tipo) as NumeroDeTiposResiduos
+FROM Contratos Cont
+INNER JOIN LocalesProductoresXContratos LocProdxCont on Cont.ContratoID = LocProdxCont.ContratoID
+LEFT JOIN CiclosDeRecoleccion Ciclos on LocProdxCont.LocalProductorXContratoID = Ciclos.LocalProductorXContratoID
+LEFT JOIN VolumenesRecoleccion Vols on Ciclos.CicloDeRecoleccionID = Vols.CicloDeRecoleccionID
+INNER JOIN Residuos Res on Vols.ResiduoID = Res.ResiduoID
+INNER JOIN TiposResiduos TipRes on Res.TipoResiduoID = TipRes.TipoResiduoID
+GROUP BY Cont.ContratoID
+),
+DatosPorContratos AS
+(
+SELECT
+P.Nombre as Lugar, 
+Ind.Industria as Industria, 
+TipRes.Tipo as TipoResiduo, 
+CostoProc.Tarifa *
+COUNT(ProcResLogs.ProcesoResiduoLogID) as Costo,
+
+(Cont.CostoMensual * DATEDIFF(MONTH, @FechaInicial, @FechaFinal)) /
+(SELECT NumeroDeTiposResiduos FROM TiposResiduosPorContrato WHERE ContratoID = Cont.ContratoID) 
+as Cobrado
 FROM
-LocalesProductores LocProd
-INNER JOIN Productores Prod on LocProd.ProductorID = Prod.ProductorID
-INNER JOIN Ubicaciones Ubi on LocProd.UbicacionID = Ubi.UbicacionID
-INNER JOIN Regiones Regi on Ubi.RegionID = Regi.RegionID
-INNER JOIN Locales Loc on Loc.RegionID = Regi.RegionID
-INNER JOIN RecipientesLogs RecLog on Loc.LocalID = RecLog.LocalID
-INNER JOIN TiposRecipientes TipRec on RecLog.TipoRecipienteID = TipRec.TipoRecipienteID
-INNER JOIN LotesDesechos LotDes on RecLog.LoteDesechoID = LotDes.LoteDesechoID
-INNER JOIN ProcesosResiduosLogs ProcResLog on ProcResLog.LoteDesechoID = LotDes.LoteDesechoID
-INNER JOIN CostosProcesosXPaises CostProc on ProcResLog.CostoProcesoXPaisID = CostProc.CostoProcesoXPaisID
-INNER JOIN Residuos Res on RecLog.ResiduoID = Res.ResiduoID
-INNER JOIN TiposResiduos as tr on res.TipoResiduoID = tr.TipoResiduoID
-INNER JOIN UnidadesDeMedidas as um on res.UnidadDeMedidaID = um.UnidadDeMedidaID
-INNER JOIN ProcesosResiduos ProcRes on Res.ResiduoID = ProcRes.ResiduoID
-INNER JOIN Productos Produ on Produ.ProcesoResiduoID = ProcRes.ProcesoResiduoID
-INNER JOIN ProductosXVentas ProduXVent on ProduXVent.ProductoID = Produ.ProductoID
-INNER JOIN PreciosProductosXPaises PrecProduXPais on ProduXVent.PrecioProductoID = PrecProduXPais.PrecioProductoXPaisID
-INNER JOIN Monedas on Monedas.MonedaID = PrecProduXPais.MonedaID
-INNER JOIN Contratos as Con on Con.ContratoID = RecLog.ContratoID
-INNER JOIN Industrias as Ind on Ind.IndustriaID = Prod.IndustriaID
-INNER JOIN Paises as P on P.PaisID = Ubi.PaisID
-WHERE P.Nombre = @Lugar AND RecLog.Hora BETWEEN @FechaInicial AND @FechaFinal
+Paises P
+LEFT JOIN Ubicaciones Ubi on Ubi.PaisID = P.PaisID
+LEFT JOIN LocalesProductores LocProd on LocProd.UbicacionID = Ubi.UbicacionID
+LEFT JOIN Productores Prod on Prod.ProductorID = LocProd.ProductorID
+LEFT JOIN Regiones Reg on Ubi.RegionID = Reg.RegionID
+INNER JOIN Industrias Ind on Prod.IndustriaID = Ind.IndustriaID
+LEFT JOIN Contratos Cont on Cont.ProductorID = Prod.ProductorID
+INNER JOIN Locales Locs on Reg.RegionID = Locs.RegionID
+INNER JOIN ProcesosResiduosLogs ProcResLogs on Locs.LocalID = ProcResLogs.LocalID
+LEFT JOIN Residuos Res on ProcResLogs.ResiduoID = Res.ResiduoID
+LEFT JOIN TiposResiduos TipRes on Res.TipoResiduoID = TipRes.TipoResiduoID
+INNER JOIN ProcesosResiduos ProcRes on ProcRes.ResiduoID = Res.ResiduoID 
+LEFT JOIN CostosProcesosXPaises CostoProc on CostoProc.ProcesoResiduoID = ProcRes.ProcesoResiduoID and P.PaisID = CostoProc.PaisID
+WHERE P.Nombre = @Lugar and (Cont.InicioVigencia &lt;= @FechaInicial or Cont.FinalVigencia &gt;= @FechaFinal)
+and ProcResLogs.Hora BETWEEN @FechaInicial AND @FechaFinal
+GROUP BY P.Nombre, Ind.Industria, TipRes.Tipo, CostoProc.Tarifa, Cont.ContratoID, Cont.CostoMensual
+),
+DatosAgrupados as (
+SELECT 
+DatosPorContratos.Lugar, 
+DatosPorContratos.Industria, 
+DatosPorContratos.TipoResiduo,
+DatosPorContratos.Costo as Costo,
+SUM(DatosPorContratos.Cobrado) as Cobrado
+FROM DatosPorContratos
+GROUP BY DatosPorContratos.Lugar, DatosPorContratos.Industria , DatosPorContratos.TipoResiduo, DatosPorContratos.Costo
+)
+SELECT 
+DatosAgrupados.Lugar, 
+DatosAgrupados.Industria, 
+DatosAgrupados.TipoResiduo,
+DatosAgrupados.Costo,
+DatosAgrupados.Cobrado,
+DatosAgrupados.Cobrado - DatosAgrupados.Costo as Diferencia
+FROM DatosAgrupados;
+
+
 ELSE
-SELECT TOP 5 Regi.Nombre as Lugar, Ind.Industria as Industria, tr.Tipo as TipoResiduo, PrecProduXPais.Precio, Con.CostoMensual, PrecProduXPais.Precio - Con.CostoMensual as Diferencia
+WITH TiposResiduosPorContrato AS (
+SELECT Cont.ContratoID, COUNT(DISTINCT TipRes.Tipo) as NumeroDeTiposResiduos
+FROM Contratos Cont
+INNER JOIN LocalesProductoresXContratos LocProdxCont on Cont.ContratoID = LocProdxCont.ContratoID
+LEFT JOIN CiclosDeRecoleccion Ciclos on LocProdxCont.LocalProductorXContratoID = Ciclos.LocalProductorXContratoID
+LEFT JOIN VolumenesRecoleccion Vols on Ciclos.CicloDeRecoleccionID = Vols.CicloDeRecoleccionID
+INNER JOIN Residuos Res on Vols.ResiduoID = Res.ResiduoID
+INNER JOIN TiposResiduos TipRes on Res.TipoResiduoID = TipRes.TipoResiduoID
+GROUP BY Cont.ContratoID
+),
+DatosPorContratos AS
+(
+SELECT
+Reg.Nombre as Lugar, 
+Ind.Industria as Industria, 
+TipRes.Tipo as TipoResiduo, 
+CostoProc.Tarifa *
+COUNT(ProcResLogs.ProcesoResiduoLogID) as Costo,
+
+(Cont.CostoMensual * DATEDIFF(MONTH, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 00:00:01')) /
+(SELECT NumeroDeTiposResiduos FROM TiposResiduosPorContrato WHERE ContratoID = Cont.ContratoID)) 
+as Cobrado
 FROM
-LocalesProductores LocProd
-INNER JOIN Productores Prod on LocProd.ProductorID = Prod.ProductorID
-INNER JOIN Ubicaciones Ubi on LocProd.UbicacionID = Ubi.UbicacionID
-INNER JOIN Regiones Regi on Ubi.RegionID = Regi.RegionID
-INNER JOIN Locales Loc on Loc.RegionID = Regi.RegionID
-INNER JOIN RecipientesLogs RecLog on Loc.LocalID = RecLog.LocalID
-INNER JOIN TiposRecipientes TipRec on RecLog.TipoRecipienteID = TipRec.TipoRecipienteID
-INNER JOIN LotesDesechos LotDes on RecLog.LoteDesechoID = LotDes.LoteDesechoID
-INNER JOIN ProcesosResiduosLogs ProcResLog on ProcResLog.LoteDesechoID = LotDes.LoteDesechoID
-INNER JOIN CostosProcesosXPaises CostProc on ProcResLog.CostoProcesoXPaisID = CostProc.CostoProcesoXPaisID
-INNER JOIN Residuos Res on RecLog.ResiduoID = Res.ResiduoID
-INNER JOIN TiposResiduos as tr on res.TipoResiduoID = tr.TipoResiduoID
-INNER JOIN UnidadesDeMedidas as um on res.UnidadDeMedidaID = um.UnidadDeMedidaID
-INNER JOIN ProcesosResiduos ProcRes on Res.ResiduoID = ProcRes.ResiduoID
-INNER JOIN Productos Produ on Produ.ProcesoResiduoID = ProcRes.ProcesoResiduoID
-INNER JOIN ProductosXVentas ProduXVent on ProduXVent.ProductoID = Produ.ProductoID
-INNER JOIN PreciosProductosXPaises PrecProduXPais on ProduXVent.PrecioProductoID = PrecProduXPais.PrecioProductoXPaisID
-INNER JOIN Monedas on Monedas.MonedaID = PrecProduXPais.MonedaID
-INNER JOIN Contratos as Con on Con.ContratoID = RecLog.ContratoID
-INNER JOIN Industrias as Ind on Ind.IndustriaID = Prod.IndustriaID
-INNER JOIN Paises as P on P.PaisID = Ubi.PaisID
-WHERE Regi.Nombre = @Lugar AND RecLog.Hora BETWEEN @FechaInicial AND @FechaFinal
-ORDER BY Diferencia DESC</CommandText>
+Regiones Reg
+LEFT JOIN Ubicaciones Ubi on Ubi.RegionID = Reg.RegionID
+LEFT JOIN Paises P on P.PaisID = Ubi.PaisID
+LEFT JOIN LocalesProductores LocProd on LocProd.UbicacionID = Ubi.UbicacionID
+LEFT JOIN Productores Prod on Prod.ProductorID = LocProd.ProductorID
+INNER JOIN Industrias Ind on Prod.IndustriaID = Ind.IndustriaID
+LEFT JOIN Contratos Cont on Cont.ProductorID = Prod.ProductorID
+INNER JOIN Locales Locs on Reg.RegionID = Locs.RegionID
+INNER JOIN ProcesosResiduosLogs ProcResLogs on Locs.LocalID = ProcResLogs.LocalID
+LEFT JOIN Residuos Res on ProcResLogs.ResiduoID = Res.ResiduoID
+LEFT JOIN TiposResiduos TipRes on Res.TipoResiduoID = TipRes.TipoResiduoID
+INNER JOIN ProcesosResiduos ProcRes on ProcRes.ResiduoID = Res.ResiduoID 
+LEFT JOIN CostosProcesosXPaises CostoProc on CostoProc.ProcesoResiduoID = ProcRes.ProcesoResiduoID and P.PaisID = CostoProc.PaisID
+WHERE Reg.Nombre = @Lugar and (Cont.InicioVigencia &lt;= @FechaInicial or Cont.FinalVigencia &gt;= @FechaFinal)
+and ProcResLogs.Hora BETWEEN @FechaInicial AND @FechaFinal
+GROUP BY Reg.Nombre, Ind.Industria, TipRes.Tipo, CostoProc.Tarifa, Cont.ContratoID, Cont.CostoMensual
+),
+DatosAgrupados as (
+SELECT 
+DatosPorContratos.Lugar, 
+DatosPorContratos.Industria, 
+DatosPorContratos.TipoResiduo,
+DatosPorContratos.Costo as Costo,
+SUM(DatosPorContratos.Cobrado) as Cobrado
+FROM DatosPorContratos
+GROUP BY DatosPorContratos.Lugar, DatosPorContratos.Industria , DatosPorContratos.TipoResiduo, DatosPorContratos.Costo
+)
+SELECT 
+DatosAgrupados.Lugar, 
+DatosAgrupados.Industria, 
+DatosAgrupados.TipoResiduo,
+DatosAgrupados.Costo,
+DatosAgrupados.Cobrado,
+DatosAgrupados.Cobrado - DatosAgrupados.Costo as Diferencia
+FROM DatosAgrupados;</CommandText>
       </Query>
       <Fields>
         <Field Name="Lugar">
@@ -95,12 +168,12 @@ ORDER BY Diferencia DESC</CommandText>
           <DataField>TipoResiduo</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
-        <Field Name="Precio">
-          <DataField>Precio</DataField>
+        <Field Name="Costo">
+          <DataField>Costo</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
-        <Field Name="CostoMensual">
-          <DataField>CostoMensual</DataField>
+        <Field Name="Cobrado">
+          <DataField>Cobrado</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
         <Field Name="Diferencia">
@@ -122,7 +195,10 @@ ORDER BY Diferencia DESC</CommandText>
                 <TextRuns>
                   <TextRun>
                     <Value>Reporte Esencial Verde</Value>
-                    <Style />
+                    <Style>
+                      <FontSize>20pt</FontSize>
+                      <Color>DarkViolet</Color>
+                    </Style>
                   </TextRun>
                 </TextRuns>
                 <Style />
@@ -131,12 +207,13 @@ ORDER BY Diferencia DESC</CommandText>
             <rd:DefaultName>Textbox1</rd:DefaultName>
             <Top>0.26389in</Top>
             <Left>2.51389in</Left>
-            <Height>0.25in</Height>
-            <Width>1.65278in</Width>
+            <Height>0.40278in</Height>
+            <Width>3.02084in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <BackgroundColor>LightGrey</BackgroundColor>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
@@ -150,10 +227,27 @@ ORDER BY Diferencia DESC</CommandText>
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>Fechas: 2023-01-01 hasta 20-06-10</Value>
+                    <Value>Fechas: </Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
-                      <FontSize>8pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=Parameters!FechaInicial.Value</Value>
+                    <Style>
+                      <FontFamily>Arial</FontFamily>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value> hasta </Value>
+                    <Style>
+                      <FontFamily>Arial</FontFamily>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=Parameters!FechaFinal.Value</Value>
+                    <Style>
+                      <FontFamily>Arial</FontFamily>
                     </Style>
                   </TextRun>
                 </TextRuns>
@@ -161,10 +255,10 @@ ORDER BY Diferencia DESC</CommandText>
               </Paragraph>
             </Paragraphs>
             <rd:DefaultName>Textbox2</rd:DefaultName>
-            <Top>0.64583in</Top>
+            <Top>1.01611in</Top>
             <Left>0.33333in</Left>
             <Height>0.25in</Height>
-            <Width>1.83333in</Width>
+            <Width>5.73611in</Width>
             <ZIndex>1</ZIndex>
             <Style>
               <Border>
@@ -176,14 +270,17 @@ ORDER BY Diferencia DESC</CommandText>
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
-          <Tablix Name="Tablix3">
+          <Tablix Name="Tablix1">
             <TablixBody>
               <TablixColumns>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>0.87731in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1in</Width>
+                  <Width>0.68287in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.97454in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -197,68 +294,8 @@ ORDER BY Diferencia DESC</CommandText>
               </TablixColumns>
               <TablixRows>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.22222in</Height>
                   <TablixCells>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox19">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Lugar</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox19</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox23">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value>Tipo Residuo</Value>
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox23</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Textbox25">
@@ -268,10 +305,8 @@ ORDER BY Diferencia DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Precio</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
+                                  <Value>Industria</Value>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -300,10 +335,8 @@ ORDER BY Diferencia DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Costo Mensual</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
+                                  <Value>Lugar</Value>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -332,10 +365,8 @@ ORDER BY Diferencia DESC</CommandText>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>Diferencia</Value>
-                                  <Style>
-                                    <FontFamily>Arial</FontFamily>
-                                  </Style>
+                                  <Value>Tipo Residuo</Value>
+                                  <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style />
@@ -355,11 +386,137 @@ ORDER BY Diferencia DESC</CommandText>
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox31">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Costo</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox31</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox33">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Cobrado</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox33</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox35">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Diferencia</Value>
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox35</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
-                  <Height>0.25in</Height>
+                  <Height>0.22222in</Height>
                   <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Industria">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Industria.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Industria</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                     <TablixCell>
                       <CellContents>
                         <Textbox Name="Lugar">
@@ -422,14 +579,14 @@ ORDER BY Diferencia DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Precio">
+                        <Textbox Name="Costo">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Precio.Value</Value>
+                                  <Value>=Fields!Costo.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                   </Style>
@@ -438,7 +595,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Precio</rd:DefaultName>
+                          <rd:DefaultName>Costo</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -454,14 +611,14 @@ ORDER BY Diferencia DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="CostoMensual">
+                        <Textbox Name="Cobrado">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!CostoMensual.Value</Value>
+                                  <Value>=Fields!Cobrado.Value</Value>
                                   <Style>
                                     <FontFamily>Arial</FontFamily>
                                   </Style>
@@ -470,7 +627,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>CostoMensual</rd:DefaultName>
+                          <rd:DefaultName>Cobrado</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -523,7 +680,7 @@ ORDER BY Diferencia DESC</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox14">
+                        <Textbox Name="Textbox47">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -531,13 +688,15 @@ ORDER BY Diferencia DESC</CommandText>
                               <TextRuns>
                                 <TextRun>
                                   <Value>Subtotal:</Value>
-                                  <Style />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
                                 </TextRun>
                               </TextRuns>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox14</rd:DefaultName>
+                          <rd:DefaultName>Textbox47</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -553,37 +712,7 @@ ORDER BY Diferencia DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox16">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox16</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox17">
+                        <Textbox Name="Textbox48">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -599,7 +728,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox17</rd:DefaultName>
+                          <rd:DefaultName>Textbox48</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -615,7 +744,7 @@ ORDER BY Diferencia DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox18">
+                        <Textbox Name="Textbox49">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -631,7 +760,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox18</rd:DefaultName>
+                          <rd:DefaultName>Textbox49</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -647,7 +776,71 @@ ORDER BY Diferencia DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox20">
+                        <Textbox Name="Textbox50">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox50</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox51">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox51</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox52">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -663,7 +856,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox20</rd:DefaultName>
+                          <rd:DefaultName>Textbox52</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -684,67 +877,7 @@ ORDER BY Diferencia DESC</CommandText>
                   <TablixCells>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox4">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox4</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox6">
-                          <CanGrow>true</CanGrow>
-                          <KeepTogether>true</KeepTogether>
-                          <Paragraphs>
-                            <Paragraph>
-                              <TextRuns>
-                                <TextRun>
-                                  <Value />
-                                  <Style />
-                                </TextRun>
-                              </TextRuns>
-                              <Style />
-                            </Paragraph>
-                          </Paragraphs>
-                          <rd:DefaultName>Textbox6</rd:DefaultName>
-                          <Style>
-                            <Border>
-                              <Color>LightGrey</Color>
-                              <Style>Solid</Style>
-                            </Border>
-                            <PaddingLeft>2pt</PaddingLeft>
-                            <PaddingRight>2pt</PaddingRight>
-                            <PaddingTop>2pt</PaddingTop>
-                            <PaddingBottom>2pt</PaddingBottom>
-                          </Style>
-                        </Textbox>
-                      </CellContents>
-                    </TablixCell>
-                    <TablixCell>
-                      <CellContents>
-                        <Textbox Name="Textbox7">
+                        <Textbox Name="Textbox37">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -760,7 +893,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox7</rd:DefaultName>
+                          <rd:DefaultName>Textbox37</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -776,7 +909,7 @@ ORDER BY Diferencia DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox8">
+                        <Textbox Name="Textbox38">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -792,7 +925,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox8</rd:DefaultName>
+                          <rd:DefaultName>Textbox38</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -808,7 +941,103 @@ ORDER BY Diferencia DESC</CommandText>
                     </TablixCell>
                     <TablixCell>
                       <CellContents>
-                        <Textbox Name="Textbox9">
+                        <Textbox Name="Textbox39">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox39</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox40">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox40</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox41">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value />
+                                  <Style>
+                                    <FontFamily>Arial</FontFamily>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox41</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox42">
                           <CanGrow>true</CanGrow>
                           <KeepTogether>true</KeepTogether>
                           <Paragraphs>
@@ -824,7 +1053,7 @@ ORDER BY Diferencia DESC</CommandText>
                               <Style />
                             </Paragraph>
                           </Paragraphs>
-                          <rd:DefaultName>Textbox9</rd:DefaultName>
+                          <rd:DefaultName>Textbox42</rd:DefaultName>
                           <Style>
                             <Border>
                               <Color>LightGrey</Color>
@@ -849,6 +1078,7 @@ ORDER BY Diferencia DESC</CommandText>
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
+                <TablixMember />
               </TablixMembers>
             </TablixColumnHierarchy>
             <TablixRowHierarchy>
@@ -857,7 +1087,7 @@ ORDER BY Diferencia DESC</CommandText>
                   <TablixHeader>
                     <Size>1in</Size>
                     <CellContents>
-                      <Textbox Name="Textbox10">
+                      <Textbox Name="Textbox43">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -865,13 +1095,15 @@ ORDER BY Diferencia DESC</CommandText>
                             <TextRuns>
                               <TextRun>
                                 <Value>Industria</Value>
-                                <Style />
+                                <Style>
+                                  <FontFamily>Arial</FontFamily>
+                                </Style>
                               </TextRun>
                             </TextRuns>
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox10</rd:DefaultName>
+                        <rd:DefaultName>Textbox43</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -912,7 +1144,9 @@ ORDER BY Diferencia DESC</CommandText>
                             <TextRuns>
                               <TextRun>
                                 <Value>=Fields!Industria.Value</Value>
-                                <Style />
+                                <Style>
+                                  <FontFamily>Arial</FontFamily>
+                                </Style>
                               </TextRun>
                             </TextRuns>
                             <Style />
@@ -945,7 +1179,7 @@ ORDER BY Diferencia DESC</CommandText>
                   <TablixHeader>
                     <Size>1in</Size>
                     <CellContents>
-                      <Textbox Name="Textbox12">
+                      <Textbox Name="Textbox45">
                         <CanGrow>true</CanGrow>
                         <KeepTogether>true</KeepTogether>
                         <Paragraphs>
@@ -953,13 +1187,15 @@ ORDER BY Diferencia DESC</CommandText>
                             <TextRuns>
                               <TextRun>
                                 <Value>Total:</Value>
-                                <Style />
+                                <Style>
+                                  <FontFamily>Arial</FontFamily>
+                                </Style>
                               </TextRun>
                             </TextRuns>
                             <Style />
                           </Paragraph>
                         </Paragraphs>
-                        <rd:DefaultName>Textbox12</rd:DefaultName>
+                        <rd:DefaultName>Textbox45</rd:DefaultName>
                         <Style>
                           <Border>
                             <Color>LightGrey</Color>
@@ -981,10 +1217,10 @@ ORDER BY Diferencia DESC</CommandText>
               </TablixMembers>
             </TablixRowHierarchy>
             <DataSetName>ConsultaIndustrias</DataSetName>
-            <Top>1.22444in</Top>
-            <Left>0.51389in</Left>
-            <Height>1in</Height>
-            <Width>6in</Width>
+            <Top>1.53in</Top>
+            <Left>0.33333in</Left>
+            <Height>0.94444in</Height>
+            <Width>6.53472in</Width>
             <ZIndex>2</ZIndex>
             <Style>
               <Border>
@@ -993,7 +1229,7 @@ ORDER BY Diferencia DESC</CommandText>
             </Style>
           </Tablix>
         </ReportItems>
-        <Height>2.22444in</Height>
+        <Height>2.47444in</Height>
         <Style />
       </Body>
       <Width>7.51389in</Width>

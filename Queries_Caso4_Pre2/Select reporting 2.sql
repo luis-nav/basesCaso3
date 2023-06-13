@@ -1,6 +1,15 @@
 USE [esencialVerde];
 
-IF 'Pais' = 'Pais'
+declare @FechaInicial datetime2(7)
+set @FechaInicial = CONVERT(datetime2(7), '2023-01-01 00:00:01')
+declare @FechaFinal datetime2(7)
+set @FechaFinal = CONVERT(datetime2(7), '2023-12-31 00:00:01')
+declare @Lugar nchar(50)
+set @Lugar = 'Costa Rica'
+declare @RegionOPais nchar(50)
+set @RegionOPais = 'Pais'
+
+IF @RegionOPais = 'Pais'
 WITH TiposResiduosPorContrato AS (
 SELECT Cont.ContratoID, COUNT(DISTINCT TipRes.Tipo) as NumeroDeTiposResiduos
 FROM Contratos Cont
@@ -20,7 +29,7 @@ TipRes.Tipo as TipoResiduo,
 CostoProc.Tarifa *
 COUNT(ProcResLogs.ProcesoResiduoLogID) as Costo,
 
-(Cont.CostoMensual * DATEDIFF(MONTH, @fechainicio), @fechafinal)) /
+(Cont.CostoMensual * DATEDIFF(MONTH, @FechaInicial, @FechaFinal) /
 (SELECT NumeroDeTiposResiduos FROM TiposResiduosPorContrato WHERE ContratoID = Cont.ContratoID)) 
 as Cobrado
 FROM
@@ -35,10 +44,10 @@ INNER JOIN Locales Locs on Reg.RegionID = Locs.RegionID
 INNER JOIN ProcesosResiduosLogs ProcResLogs on Locs.LocalID = ProcResLogs.LocalID
 LEFT JOIN Residuos Res on ProcResLogs.ResiduoID = Res.ResiduoID
 LEFT JOIN TiposResiduos TipRes on Res.TipoResiduoID = TipRes.TipoResiduoID
-INNER JOIN ProcesosResiduos ProcRes on ProcRes.ResiduoID = Res.ResiduoID 
+LEFT JOIN ProcesosResiduos ProcRes on ProcRes.ResiduoID = Res.ResiduoID 
 LEFT JOIN CostosProcesosXPaises CostoProc on CostoProc.ProcesoResiduoID = ProcRes.ProcesoResiduoID and P.PaisID = CostoProc.PaisID
-WHERE P.Nombre = @lugar and (Cont.InicioVigencia <= @fechainicio or Cont.FinalVigencia >= @fechafinal)
-and ProcResLogs.Hora BETWEEN @fechainicio AND @fechafinal
+WHERE P.Nombre = @Lugar and (Cont.InicioVigencia <= @FechaInicial or Cont.FinalVigencia >= @FechaFinal)
+and ProcResLogs.Hora BETWEEN @FechaInicial AND @FechaFinal
 GROUP BY P.Nombre, Ind.Industria, TipRes.Tipo, CostoProc.Tarifa, Cont.ContratoID, Cont.CostoMensual
 ),
 DatosAgrupados as (
@@ -81,7 +90,7 @@ TipRes.Tipo as TipoResiduo,
 CostoProc.Tarifa *
 COUNT(ProcResLogs.ProcesoResiduoLogID) as Costo,
 
-(Cont.CostoMensual * DATEDIFF(MONTH, CONVERT(datetime2(7), '2023-01-01 00:00:01'), CONVERT(datetime2(7), '2023-12-31 00:00:01')) /
+(Cont.CostoMensual * DATEDIFF(MONTH, @FechaInicial, @FechaFinal) /
 (SELECT NumeroDeTiposResiduos FROM TiposResiduosPorContrato WHERE ContratoID = Cont.ContratoID)) 
 as Cobrado
 FROM
@@ -98,8 +107,8 @@ LEFT JOIN Residuos Res on ProcResLogs.ResiduoID = Res.ResiduoID
 LEFT JOIN TiposResiduos TipRes on Res.TipoResiduoID = TipRes.TipoResiduoID
 INNER JOIN ProcesosResiduos ProcRes on ProcRes.ResiduoID = Res.ResiduoID 
 LEFT JOIN CostosProcesosXPaises CostoProc on CostoProc.ProcesoResiduoID = ProcRes.ProcesoResiduoID and P.PaisID = CostoProc.PaisID
-WHERE Reg.Nombre = @lugar and (Cont.InicioVigencia <= @fechainicio or Cont.FinalVigencia >= @fechafinal)
-and ProcResLogs.Hora BETWEEN @fechainicio AND @fechafinal
+WHERE Reg.Nombre = @Lugar and (Cont.InicioVigencia <= @FechaInicial or Cont.FinalVigencia >= @FechaFinal)
+and ProcResLogs.Hora BETWEEN @FechaInicial AND @FechaFinal
 GROUP BY Reg.Nombre, Ind.Industria, TipRes.Tipo, CostoProc.Tarifa, Cont.ContratoID, Cont.CostoMensual
 ),
 DatosAgrupados as (

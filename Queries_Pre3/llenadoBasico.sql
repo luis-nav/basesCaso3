@@ -352,34 +352,6 @@ insert into ActoresXContrato values (3, 2)
 
 insert into Locales values (1, NULL, 2)
 
--- TODAS FECHAS 
--- INICIO: CONVERT(datetime2(7), '2023-01-01 00:00:01')
--- FIN: CONVERT(datetime2(7), '2023-12-31 00:00:01')
---INSERTAR 4 CICLOS DE RECOLECCION CON LocalProductorXContratoID =1, =2, =3, =4
--- CADA CICLO 
-
--- insert into CiclosDeRecoleccion values ('2023-05-15 07:00:00', 7, 1, 2, 2, 1)
--- insert into CiclosDeRecoleccion values ('2023-05-17 07:00:00', 7, 2, 3, 1, 1)
-select * from CiclosDeRecoleccion
-INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 1, null, 1, null)
-INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 2, null, 2, null)
-INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 3, null, 3, null)
-INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 4, null, 4, null)
-
--- insert into VolumenesRecoleccion values (1, '2023-01-01', '2023-12-31', 500.80, 1, 1)
--- insert into VolumenesRecoleccion values (2, '2022-01-01', '2023-12-31', 1000.52, 1, 2)
--- insert into VolumenesRecoleccion values (1, '2023-10-01', '2023-12-31', 80.80, 1, 5)
--- insert into VolumenesRecoleccion values (2, '2023-06-01', '2023-12-31', 1500.52, 1, 6)
-select * from VolumenesRecoleccion
-INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
-SELECT 1, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
-INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
-SELECT 2, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
-INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
-SELECT 3, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
-INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
-SELECT 4, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
-
 
 -- BALANCES KFC Y MAC
 INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddress, Username, TipoDeCambioID, ProductorID, Cheksum) VALUES 
@@ -392,19 +364,18 @@ INSERT INTO BalancesLogs (MonedaID, MontoTotal, MontoAñadido, PostTime, IPAddre
 
 
 -- LLENADO NUEVO
-
---UPDATE Ubicaciones SET CiudadID = 2 WHERE UbicacionID > 0;
---UPDATE Ubicaciones SET CiudadID = 1 WHERE UbicacionID = 3 or UbicacionID > 6;
---INSERT INTO RecipientesLogs (Hora, TipoRecipienteID, IPAddress, Username, Checksum, LocalID, AccionRecipienteID, CantidadRecipientes, ResiduoID, CamionID, ContratoID)
---SELECT DATEADD(MINUTE, 30, Hora),TipoRecipienteID, IPAddress, Username, Checksum, LocalID, 5, CantidadRecipientes, ResiduoID, CamionID, ContratoID FROM RecipientesLogs
---INSERT INTO AccionesRecipientes (Descripcion) VALUES ('Entregar a Recolector');
---INSERT INTO Contratos (InicioVigencia, FinalVigencia, EmpresaRecolectoraID, CostoMensual, MonedaID, TipoDeCambioID)
---VALUES (CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 2, 40000, 1, 1);
---INSERT INTO RecipientesLogs (Hora, TipoRecipienteID, IPAddress, Username, Checksum, LocalID, AccionRecipienteID, CantidadRecipientes, ResiduoID, CamionID, ContratoID)
---SELECT Hora,TipoRecipienteID, IPAddress, Username, Checksum, LocalID, 5, FLOOR(CantidadRecipientes/1.5), ResiduoID, CamionID, 3 
---FROM RecipientesLogs
---WHERE AccionRecipienteID = 5 AND ContratoID = 1;
---DELETE FROM RecipientesLogs WHERE AccionRecipienteID = 5 AND CantidadRecipientes > 200;
+UPDATE Ubicaciones SET CiudadID = 2 WHERE UbicacionID > 0;
+UPDATE Ubicaciones SET CiudadID = 1 WHERE UbicacionID = 3 or UbicacionID > 6;
+INSERT INTO RecipientesLogs (Hora, TipoRecipienteID, IPAddress, Username, Checksum, LocalID, AccionRecipienteID, CantidadRecipientes, ResiduoID, CamionID, ContratoID)
+SELECT DATEADD(MINUTE, 30, Hora),TipoRecipienteID, IPAddress, Username, Checksum, LocalID, 5, CantidadRecipientes, ResiduoID, CamionID, ContratoID FROM RecipientesLogs
+INSERT INTO AccionesRecipientes (Descripcion) VALUES ('Entregar a Recolector');
+INSERT INTO Contratos (InicioVigencia, FinalVigencia, EmpresaRecolectoraID, CostoMensual, MonedaID, TipoDeCambioID)
+VALUES (CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 2, 40000, 1, 1);
+INSERT INTO RecipientesLogs (Hora, TipoRecipienteID, IPAddress, Username, Checksum, LocalID, AccionRecipienteID, CantidadRecipientes, ResiduoID, CamionID, ContratoID)
+SELECT Hora,TipoRecipienteID, IPAddress, Username, Checksum, LocalID, 5, FLOOR(CantidadRecipientes/1.5), ResiduoID, CamionID, 3 
+FROM RecipientesLogs
+WHERE AccionRecipienteID = 5 AND ContratoID = 1;
+DELETE FROM RecipientesLogs WHERE AccionRecipienteID = 5 AND CantidadRecipientes > 200;
 
 
 
@@ -433,106 +404,23 @@ SELECT HoraApertura, LocalID, ResiduoID, ResiduoID, Username, IPAddress, Checksu
 FROM LotesDesechos;
 
 
+-- TODAS FECHAS 
+-- INICIO: CONVERT(datetime2(7), '2023-01-01 00:00:01')
+-- FIN: CONVERT(datetime2(7), '2023-12-31 00:00:01')
+--INSERTAR 4 CICLOS DE RECOLECCION CON LocalProductorXContratoID =1, =2, =3, =4
+-- CADA CICLO 
+
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 1, null, 1, null)
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 2, null, 2, null)
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 3, null, 3, null)
+INSERT INTO CiclosDeRecoleccion VALUES (CONVERT(datetime2(7), '2023-01-01 00:00:01'), 7, 1, null, 4, null)
 
 
-
-
-
-
-
-
--- Llenado para reporting
-
---Tablas con llenado automatico:
-
---ProcesosResiduosLogs (1)
---CostosProcesosXPaises (1)
---ProcesosResiduos (1)
---PreciosProductosXPaises (2)
--- Antes -> DBCC CHECKIDENT(Contratos, RESEED, 2)
---AperturasCajas (3)
---Ventas (3)
---Contratos (3)
---ProductosXVentas (4)
-
-insert into LotesDesechos 
-values (1, 1, CONVERT(datetime2(7), '2023-01-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-01-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
-insert into LotesDesechos 
-values (2, 5, CONVERT(datetime2(7), '2023-02-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-02-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
-insert into LotesDesechos 
-values (3, 7, CONVERT(datetime2(7), '2023-03-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-03-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
-insert into LotesDesechos 
-values (1, 2, CONVERT(datetime2(7), '2023-04-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-04-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
-insert into LotesDesechos 
-values (2, 3, CONVERT(datetime2(7), '2023-05-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-05-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
-insert into LotesDesechos 
-values (3, 4, CONVERT(datetime2(7), '2023-06-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-06-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
-insert into LotesDesechos 
-values (1, 6, CONVERT(datetime2(7), '2023-07-01 00:00:01'), '192.167.0.11', 'Luis', CHECKSUM(CONVERT(datetime2(7), '2023-07-01 06:00:01'), 1, 1, 1, 500, 1, '192.167.0.11', 'Luis'))
-
-insert into Productos values ('Colador', 'Utencilio de cocina', 1, 1)
-insert into Productos values ('Lapiz', 'Utencilio de oficina', 1, 5)
-insert into Productos values ('Bolsa', 'Utencilio para mover cosas', 1, 3)
-insert into Productos values ('Borrador', 'Utencilio de oficina', 1, 7)
-insert into Productos values ('Libro', 'Utencilio de oficina', 1, 2)
-insert into Productos values ('Cobija', 'Utencilio domestico', 1, 6)
-insert into Productos values ('Regla', 'Utencilio de oficina', 1, 22)
-insert into Productos values ('Folder', 'Utencilio de oficina', 1, 79)
-insert into Productos values ('Toalla', 'Utencilio domestico', 1, 8)
-insert into Productos values ('Maceta', 'Utencilio domestico', 1, 14)
-
-insert into TiposDePagos values ('Efectivo'), ('Tarjeta'), ('Sinpe'), ('Transferencia')
-
-update RecipientesLogs set LoteDesechoID = 1 where RecipienteLogID = 1
-update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 2
-update RecipientesLogs set LoteDesechoID = 5 where RecipienteLogID = 3
-update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 4
-update RecipientesLogs set LoteDesechoID = 4 where RecipienteLogID = 5
-update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 6
-update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 7
-update RecipientesLogs set LoteDesechoID = 7 where RecipienteLogID = 8
-update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 9
-update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 10
-update RecipientesLogs set LoteDesechoID = 1 where RecipienteLogID = 11
-update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 12
-update RecipientesLogs set LoteDesechoID = 5 where RecipienteLogID = 13
-update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 14
-update RecipientesLogs set LoteDesechoID = 4 where RecipienteLogID = 15
-update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 16
-update RecipientesLogs set LoteDesechoID = 3 where RecipienteLogID = 17
-update RecipientesLogs set LoteDesechoID = 7 where RecipienteLogID = 18
-update RecipientesLogs set LoteDesechoID = 2 where RecipienteLogID = 19
-update RecipientesLogs set LoteDesechoID = 6 where RecipienteLogID = 20
-
-update Contratos set InicioVigencia = CONVERT(date, '2022-02-22'), FinalVigencia = CONVERT(date, '2023-02-22'), CostoMensual = 5817239.21400 where ContratoID = 1
-update Contratos set InicioVigencia = CONVERT(date, '2022-05-01'), FinalVigencia = CONVERT(date, '2023-03-14'), CostoMensual = 1417635.3500 where ContratoID = 2
-
-update RecipientesLogs set ContratoID = 1 where RecipienteLogID = 1
-update RecipientesLogs set ContratoID = 33 where RecipienteLogID = 2
-update RecipientesLogs set ContratoID = 5 where RecipienteLogID = 3
-update RecipientesLogs set ContratoID = 10 where RecipienteLogID = 4
-update RecipientesLogs set ContratoID = 14 where RecipienteLogID = 5
-update RecipientesLogs set ContratoID = 28 where RecipienteLogID = 6
-update RecipientesLogs set ContratoID = 48 where RecipienteLogID = 7
-update RecipientesLogs set ContratoID = 27 where RecipienteLogID = 8
-update RecipientesLogs set ContratoID = 32 where RecipienteLogID = 9
-update RecipientesLogs set ContratoID = 6 where RecipienteLogID = 10
-update RecipientesLogs set ContratoID = 11 where RecipienteLogID = 11
-update RecipientesLogs set ContratoID = 43 where RecipienteLogID = 12
-update RecipientesLogs set ContratoID = 50 where RecipienteLogID = 13
-update RecipientesLogs set ContratoID = 12 where RecipienteLogID = 14
-update RecipientesLogs set ContratoID = 41 where RecipienteLogID = 15
-update RecipientesLogs set ContratoID = 35 where RecipienteLogID = 16
-update RecipientesLogs set ContratoID = 13 where RecipienteLogID = 17
-update RecipientesLogs set ContratoID = 7 where RecipienteLogID = 18
-update RecipientesLogs set ContratoID = 2 where RecipienteLogID = 19
-update RecipientesLogs set ContratoID = 6 where RecipienteLogID = 20
-
-update Productores set IndustriaID = 1 where ProductorID = 1
-update Productores set IndustriaID = 1 where ProductorID = 2
-
-update LocalesProductores set ProductorID = 3 where LocalProductorID = 2
-update LocalesProductores set ProductorID = 4 where LocalProductorID = 4
-update LocalesProductores set ProductorID = 6 where LocalProductorID = 5
-update LocalesProductores set ProductorID = 5 where LocalProductorID = 6
-update LocalesProductores set ProductorID = 3 where LocalProductorID = 7
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 1, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 2, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 3, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
+INSERT INTO VolumenesRecoleccion (CicloDeRecoleccionID, InicioVigencia, FinalVigencia, Volumen, UnidadDeMedidaID, ResiduoID)
+SELECT 4, CONVERT(date, '2023-01-01'), CONVERT(date, '2023-12-31'), 1000, 1, ResiduoID FROM Residuos;
